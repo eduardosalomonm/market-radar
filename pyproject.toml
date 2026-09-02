@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "market-radar"
+version = "0.1.0"
+description = "A transparent after-close stock and options evidence dashboard."
+requires-python = ">=3.9"
+dependencies = [
+  "alpaca-py>=0.42,<1",
+  "openai>=1.100,<3",
+  "pandas>=2.1,<3",
+  "plotly>=5.22,<7",
+  "python-dotenv>=1,<2",
+  "reportlab>=4,<5",
+  "streamlit>=1.37,<2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9", "ruff>=0.9,<1"]
+
+[project.scripts]
+market-radar = "market_radar.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["market_radar*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+target-version = "py39"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]

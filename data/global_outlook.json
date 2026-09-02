@@ -1,0 +1,30 @@
+{
+  "as_of": "2026-07-08",
+  "title": "Global economy in crosscurrents of conflict and technology",
+  "summary": "The IMF expects global growth to soften in 2026 before improving in 2027. Inflation progress has stalled, while energy shocks, geopolitical fragmentation and uneven AI-related investment remain important risks.",
+  "metrics": [
+    {
+      "label": "2026 global growth",
+      "value": "3.0%",
+      "context": "IMF projection"
+    },
+    {
+      "label": "2027 global growth",
+      "value": "3.4%",
+      "context": "IMF projection"
+    },
+    {
+      "label": "2026 global inflation",
+      "value": "4.7%",
+      "context": "IMF projection"
+    }
+  ],
+  "risks": [
+    "Energy and geopolitical shocks can slow growth and revive inflation.",
+    "The outlook differs sharply between energy importers, exporters and technology supply-chain beneficiaries.",
+    "High public debt leaves less policy room if growth weakens."
+  ],
+  "source": "IMF World Economic Outlook Update",
+  "source_url": "https://www.imf.org/en/publications/weo",
+  "source_note": "Official forecast reference; market proxy data in the dashboard updates separately."
+}

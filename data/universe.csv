@@ -1,0 +1,515 @@
+ticker,name,sector,industry,sector_etf,source,as_of
+MMM,3M,Industrials,Industrial Conglomerates,XLI,datasets/s-and-p-500-companies,2026-08-30
+AOS,A. O. Smith,Industrials,Building Products,XLI,datasets/s-and-p-500-companies,2026-08-30
+ABT,Abbott Laboratories,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+ABBV,AbbVie,Health Care,Biotechnology,XLV,datasets/s-and-p-500-companies,2026-08-30
+ACN,Accenture,Information Technology,IT Consulting & Other Services,XLK,datasets/s-and-p-500-companies,2026-08-30
+ADBE,Adobe Inc.,Information Technology,Application Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+AMD,Advanced Micro Devices,Information Technology,Semiconductors,XLK,datasets/s-and-p-500-companies,2026-08-30
+AES,AES Corporation,Utilities,Independent Power Producers & Energy Traders,XLU,datasets/s-and-p-500-companies,2026-08-30
+AFL,Aflac,Financials,Life & Health Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+A,Agilent Technologies,Health Care,Life Sciences Tools & Services,XLV,datasets/s-and-p-500-companies,2026-08-30
+APD,Air Products,Materials,Industrial Gases,XLB,datasets/s-and-p-500-companies,2026-08-30
+ABNB,Airbnb,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",XLY,datasets/s-and-p-500-companies,2026-08-30
+AKAM,Akamai Technologies,Information Technology,Internet Services & Infrastructure,XLK,datasets/s-and-p-500-companies,2026-08-30
+ALB,Albemarle Corporation,Materials,Specialty Chemicals,XLB,datasets/s-and-p-500-companies,2026-08-30
+ARE,Alexandria Real Estate Equities,Real Estate,Office REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+ALGN,Align Technology,Health Care,Health Care Supplies,XLV,datasets/s-and-p-500-companies,2026-08-30
+ALLE,Allegion,Industrials,Building Products,XLI,datasets/s-and-p-500-companies,2026-08-30
+LNT,Alliant Energy,Utilities,Electric Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+ALL,Allstate,Financials,Property & Casualty Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+GOOGL,Alphabet Inc. (Class A),Communication Services,Interactive Media & Services,XLC,datasets/s-and-p-500-companies,2026-08-30
+GOOG,Alphabet Inc. (Class C),Communication Services,Interactive Media & Services,XLC,datasets/s-and-p-500-companies,2026-08-30
+MO,Altria,Consumer Staples,Tobacco,XLP,datasets/s-and-p-500-companies,2026-08-30
+AMZN,Amazon,Consumer Discretionary,Broadline Retail,XLY,datasets/s-and-p-500-companies,2026-08-30
+AMCR,Amcor,Materials,Paper & Plastic Packaging Products & Materials,XLB,datasets/s-and-p-500-companies,2026-08-30
+AEE,Ameren,Utilities,Multi-Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+AEP,American Electric Power,Utilities,Electric Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+AXP,American Express,Financials,Consumer Finance,XLF,datasets/s-and-p-500-companies,2026-08-30
+AIG,American International Group,Financials,Multi-line Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+AMT,American Tower,Real Estate,Telecom Tower REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+AWK,American Water Works,Utilities,Water Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+AMP,Ameriprise Financial,Financials,Asset Management & Custody Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+AME,Ametek,Industrials,Electrical Components & Equipment,XLI,datasets/s-and-p-500-companies,2026-08-30
+AMGN,Amgen,Health Care,Biotechnology,XLV,datasets/s-and-p-500-companies,2026-08-30
+APH,Amphenol,Information Technology,Electronic Components,XLK,datasets/s-and-p-500-companies,2026-08-30
+ADI,Analog Devices,Information Technology,Semiconductors,XLK,datasets/s-and-p-500-companies,2026-08-30
+AON,Aon plc,Financials,Insurance Brokers,XLF,datasets/s-and-p-500-companies,2026-08-30
+APA,APA Corporation,Energy,Oil & Gas Exploration & Production,XLE,datasets/s-and-p-500-companies,2026-08-30
+APO,Apollo Global Management,Financials,Asset Management & Custody Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+AAPL,Apple Inc.,Information Technology,"Technology Hardware, Storage & Peripherals",XLK,datasets/s-and-p-500-companies,2026-08-30
+AMAT,Applied Materials,Information Technology,Semiconductor Materials & Equipment,XLK,datasets/s-and-p-500-companies,2026-08-30
+APP,AppLovin,Communication Services,Advertising,XLC,datasets/s-and-p-500-companies,2026-08-30
+APTV,Aptiv,Consumer Discretionary,Automotive Parts & Equipment,XLY,datasets/s-and-p-500-companies,2026-08-30
+ACGL,Arch Capital Group,Financials,Property & Casualty Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+ADM,Archer Daniels Midland,Consumer Staples,Agricultural Products & Services,XLP,datasets/s-and-p-500-companies,2026-08-30
+ARES,Ares Management,Financials,Asset Management & Custody Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+ANET,Arista Networks,Information Technology,Communications Equipment,XLK,datasets/s-and-p-500-companies,2026-08-30
+AJG,Arthur J. Gallagher & Co.,Financials,Insurance Brokers,XLF,datasets/s-and-p-500-companies,2026-08-30
+AIZ,Assurant,Financials,Multi-line Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+T,AT&T,Communication Services,Integrated Telecommunication Services,XLC,datasets/s-and-p-500-companies,2026-08-30
+ATO,Atmos Energy,Utilities,Gas Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+ADSK,Autodesk,Information Technology,Application Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+ADP,Automatic Data Processing,Industrials,Human Resource & Employment Services,XLI,datasets/s-and-p-500-companies,2026-08-30
+AZO,AutoZone,Consumer Discretionary,Automotive Retail,XLY,datasets/s-and-p-500-companies,2026-08-30
+AVY,Avery Dennison,Materials,Paper & Plastic Packaging Products & Materials,XLB,datasets/s-and-p-500-companies,2026-08-30
+AXON,Axon Enterprise,Industrials,Aerospace & Defense,XLI,datasets/s-and-p-500-companies,2026-08-30
+BKR,Baker Hughes,Energy,Oil & Gas Equipment & Services,XLE,datasets/s-and-p-500-companies,2026-08-30
+BALL,Ball Corporation,Materials,"Metal, Glass & Plastic Containers",XLB,datasets/s-and-p-500-companies,2026-08-30
+BAC,Bank of America,Financials,Diversified Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+BAX,Baxter International,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+BDX,Becton Dickinson,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+BRK.B,Berkshire Hathaway,Financials,Multi-Sector Holdings,XLF,datasets/s-and-p-500-companies,2026-08-30
+BBY,Best Buy,Consumer Discretionary,Computer & Electronics Retail,XLY,datasets/s-and-p-500-companies,2026-08-30
+TECH,Bio-Techne,Health Care,Life Sciences Tools & Services,XLV,datasets/s-and-p-500-companies,2026-08-30
+BIIB,Biogen,Health Care,Biotechnology,XLV,datasets/s-and-p-500-companies,2026-08-30
+BLK,BlackRock,Financials,Asset Management & Custody Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+BX,Blackstone Inc.,Financials,Asset Management & Custody Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+XYZ,"Block, Inc.",Financials,Transaction & Payment Processing Services,XLF,datasets/s-and-p-500-companies,2026-08-30
+BNY,BNY Mellon,Financials,Asset Management & Custody Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+BA,Boeing,Industrials,Aerospace & Defense,XLI,datasets/s-and-p-500-companies,2026-08-30
+BKNG,Booking Holdings,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",XLY,datasets/s-and-p-500-companies,2026-08-30
+BSX,Boston Scientific,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+BMY,Bristol Myers Squibb,Health Care,Pharmaceuticals,XLV,datasets/s-and-p-500-companies,2026-08-30
+AVGO,Broadcom,Information Technology,Semiconductors,XLK,datasets/s-and-p-500-companies,2026-08-30
+BR,Broadridge Financial Solutions,Industrials,Data Processing & Outsourced Services,XLI,datasets/s-and-p-500-companies,2026-08-30
+BRO,Brown & Brown,Financials,Insurance Brokers,XLF,datasets/s-and-p-500-companies,2026-08-30
+BF.B,Brown–Forman,Consumer Staples,Distillers & Vintners,XLP,datasets/s-and-p-500-companies,2026-08-30
+BLDR,Builders FirstSource,Industrials,Building Products,XLI,datasets/s-and-p-500-companies,2026-08-30
+BG,Bunge Global,Consumer Staples,Agricultural Products & Services,XLP,datasets/s-and-p-500-companies,2026-08-30
+BXP,"BXP, Inc.",Real Estate,Office REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+CHRW,C.H. Robinson,Industrials,Air Freight & Logistics,XLI,datasets/s-and-p-500-companies,2026-08-30
+CDNS,Cadence Design Systems,Information Technology,Application Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+CPT,Camden Property Trust,Real Estate,Multi-Family Residential REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+COF,Capital One,Financials,Consumer Finance,XLF,datasets/s-and-p-500-companies,2026-08-30
+CAH,Cardinal Health,Health Care,Health Care Distributors,XLV,datasets/s-and-p-500-companies,2026-08-30
+CCL,Carnival Corporation,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",XLY,datasets/s-and-p-500-companies,2026-08-30
+CARR,Carrier Global,Industrials,Building Products,XLI,datasets/s-and-p-500-companies,2026-08-30
+CVNA,Carvana,Consumer Discretionary,Automotive Retail,XLY,datasets/s-and-p-500-companies,2026-08-30
+CASY,Casey's,Consumer Staples,Food Retail,XLP,datasets/s-and-p-500-companies,2026-08-30
+CAT,Caterpillar Inc.,Industrials,Construction Machinery & Heavy Transportation Equipment,XLI,datasets/s-and-p-500-companies,2026-08-30
+CBOE,Cboe Global Markets,Financials,Financial Exchanges & Data,XLF,datasets/s-and-p-500-companies,2026-08-30
+CBRE,CBRE Group,Real Estate,Real Estate Services,XLRE,datasets/s-and-p-500-companies,2026-08-30
+CDW,CDW Corporation,Information Technology,Technology Distributors,XLK,datasets/s-and-p-500-companies,2026-08-30
+COR,Cencora,Health Care,Health Care Distributors,XLV,datasets/s-and-p-500-companies,2026-08-30
+CNC,Centene Corporation,Health Care,Managed Health Care,XLV,datasets/s-and-p-500-companies,2026-08-30
+CNP,CenterPoint Energy,Utilities,Multi-Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+CF,CF Industries,Materials,Fertilizers & Agricultural Chemicals,XLB,datasets/s-and-p-500-companies,2026-08-30
+CRL,Charles River Laboratories,Health Care,Life Sciences Tools & Services,XLV,datasets/s-and-p-500-companies,2026-08-30
+SCHW,Charles Schwab Corporation,Financials,Investment Banking & Brokerage,XLF,datasets/s-and-p-500-companies,2026-08-30
+CHTR,Charter Communications,Communication Services,Cable & Satellite,XLC,datasets/s-and-p-500-companies,2026-08-30
+CVX,Chevron Corporation,Energy,Integrated Oil & Gas,XLE,datasets/s-and-p-500-companies,2026-08-30
+CMG,Chipotle Mexican Grill,Consumer Discretionary,Restaurants,XLY,datasets/s-and-p-500-companies,2026-08-30
+CB,Chubb Limited,Financials,Property & Casualty Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+CHD,Church & Dwight,Consumer Staples,Household Products,XLP,datasets/s-and-p-500-companies,2026-08-30
+CIEN,Ciena,Information Technology,Communications Equipment,XLK,datasets/s-and-p-500-companies,2026-08-30
+CI,Cigna,Health Care,Health Care Services,XLV,datasets/s-and-p-500-companies,2026-08-30
+CINF,Cincinnati Financial,Financials,Property & Casualty Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+CTAS,Cintas,Industrials,Diversified Support Services,XLI,datasets/s-and-p-500-companies,2026-08-30
+CSCO,Cisco,Information Technology,Communications Equipment,XLK,datasets/s-and-p-500-companies,2026-08-30
+C,Citigroup,Financials,Diversified Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+CFG,Citizens Financial Group,Financials,Regional Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+CLX,Clorox,Consumer Staples,Household Products,XLP,datasets/s-and-p-500-companies,2026-08-30
+CME,CME Group,Financials,Financial Exchanges & Data,XLF,datasets/s-and-p-500-companies,2026-08-30
+CMS,CMS Energy,Utilities,Multi-Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+KO,Coca-Cola Company (The),Consumer Staples,Soft Drinks & Non-alcoholic Beverages,XLP,datasets/s-and-p-500-companies,2026-08-30
+CTSH,Cognizant,Information Technology,IT Consulting & Other Services,XLK,datasets/s-and-p-500-companies,2026-08-30
+COHR,Coherent Corp.,Information Technology,Electronic Components,XLK,datasets/s-and-p-500-companies,2026-08-30
+COIN,Coinbase,Financials,Financial Exchanges & Data,XLF,datasets/s-and-p-500-companies,2026-08-30
+CL,Colgate-Palmolive,Consumer Staples,Household Products,XLP,datasets/s-and-p-500-companies,2026-08-30
+CMCSA,Comcast,Communication Services,Cable & Satellite,XLC,datasets/s-and-p-500-companies,2026-08-30
+FIX,Comfort Systems USA,Industrials,Construction & Engineering,XLI,datasets/s-and-p-500-companies,2026-08-30
+COP,ConocoPhillips,Energy,Oil & Gas Exploration & Production,XLE,datasets/s-and-p-500-companies,2026-08-30
+ED,Consolidated Edison,Utilities,Multi-Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+STZ,Constellation Brands,Consumer Staples,Distillers & Vintners,XLP,datasets/s-and-p-500-companies,2026-08-30
+CEG,Constellation Energy,Utilities,Electric Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+COO,Cooper Companies (The),Health Care,Health Care Supplies,XLV,datasets/s-and-p-500-companies,2026-08-30
+CPRT,Copart,Industrials,Diversified Support Services,XLI,datasets/s-and-p-500-companies,2026-08-30
+GLW,Corning Inc.,Information Technology,Electronic Components,XLK,datasets/s-and-p-500-companies,2026-08-30
+CPAY,Corpay,Financials,Transaction & Payment Processing Services,XLF,datasets/s-and-p-500-companies,2026-08-30
+CTVA,Corteva,Materials,Fertilizers & Agricultural Chemicals,XLB,datasets/s-and-p-500-companies,2026-08-30
+CSGP,CoStar Group,Real Estate,Real Estate Services,XLRE,datasets/s-and-p-500-companies,2026-08-30
+COST,Costco,Consumer Staples,Consumer Staples Merchandise Retail,XLP,datasets/s-and-p-500-companies,2026-08-30
+CRH,CRH plc,Materials,Construction Materials,XLB,datasets/s-and-p-500-companies,2026-08-30
+CRWD,CrowdStrike,Information Technology,Systems Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+CCI,Crown Castle,Real Estate,Telecom Tower REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+CSX,CSX Corporation,Industrials,Rail Transportation,XLI,datasets/s-and-p-500-companies,2026-08-30
+CMI,Cummins,Industrials,Construction Machinery & Heavy Transportation Equipment,XLI,datasets/s-and-p-500-companies,2026-08-30
+CVS,CVS Health,Health Care,Health Care Services,XLV,datasets/s-and-p-500-companies,2026-08-30
+DHR,Danaher Corporation,Health Care,Life Sciences Tools & Services,XLV,datasets/s-and-p-500-companies,2026-08-30
+DRI,Darden Restaurants,Consumer Discretionary,Restaurants,XLY,datasets/s-and-p-500-companies,2026-08-30
+DDOG,Datadog,Information Technology,Application Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+DVA,DaVita,Health Care,Health Care Services,XLV,datasets/s-and-p-500-companies,2026-08-30
+DECK,Deckers Brands,Consumer Discretionary,Footwear,XLY,datasets/s-and-p-500-companies,2026-08-30
+DE,Deere & Company,Industrials,Agricultural & Farm Machinery,XLI,datasets/s-and-p-500-companies,2026-08-30
+DELL,Dell Technologies,Information Technology,"Technology Hardware, Storage & Peripherals",XLK,datasets/s-and-p-500-companies,2026-08-30
+DAL,Delta Air Lines,Industrials,Passenger Airlines,XLI,datasets/s-and-p-500-companies,2026-08-30
+DVN,Devon Energy,Energy,Oil & Gas Exploration & Production,XLE,datasets/s-and-p-500-companies,2026-08-30
+DXCM,Dexcom,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+FANG,Diamondback Energy,Energy,Oil & Gas Exploration & Production,XLE,datasets/s-and-p-500-companies,2026-08-30
+DLR,Digital Realty,Real Estate,Data Center REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+DG,Dollar General,Consumer Staples,Consumer Staples Merchandise Retail,XLP,datasets/s-and-p-500-companies,2026-08-30
+DLTR,Dollar Tree,Consumer Staples,Consumer Staples Merchandise Retail,XLP,datasets/s-and-p-500-companies,2026-08-30
+D,Dominion Energy,Utilities,Multi-Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+DPZ,Domino's,Consumer Discretionary,Restaurants,XLY,datasets/s-and-p-500-companies,2026-08-30
+DASH,DoorDash,Consumer Discretionary,Specialized Consumer Services,XLY,datasets/s-and-p-500-companies,2026-08-30
+DOV,Dover Corporation,Industrials,Industrial Machinery & Supplies & Components,XLI,datasets/s-and-p-500-companies,2026-08-30
+DOW,Dow Inc.,Materials,Commodity Chemicals,XLB,datasets/s-and-p-500-companies,2026-08-30
+DHI,D. R. Horton,Consumer Discretionary,Homebuilding,XLY,datasets/s-and-p-500-companies,2026-08-30
+DTE,DTE Energy,Utilities,Multi-Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+DUK,Duke Energy,Utilities,Electric Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+DD,DuPont,Industrials,Industrial Conglomerates,XLI,datasets/s-and-p-500-companies,2026-08-30
+ETN,Eaton Corporation,Industrials,Electrical Components & Equipment,XLI,datasets/s-and-p-500-companies,2026-08-30
+EBAY,eBay Inc.,Consumer Discretionary,Broadline Retail,XLY,datasets/s-and-p-500-companies,2026-08-30
+ECHO,EchoStar,Communication Services,Wireless Telecommunication Services,XLC,datasets/s-and-p-500-companies,2026-08-30
+ECL,Ecolab,Materials,Specialty Chemicals,XLB,datasets/s-and-p-500-companies,2026-08-30
+EIX,Edison International,Utilities,Electric Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+EW,Edwards Lifesciences,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+ELV,Elevance Health,Health Care,Managed Health Care,XLV,datasets/s-and-p-500-companies,2026-08-30
+EME,Emcor,Industrials,Construction & Engineering,XLI,datasets/s-and-p-500-companies,2026-08-30
+EMR,Emerson Electric,Industrials,Electrical Components & Equipment,XLI,datasets/s-and-p-500-companies,2026-08-30
+ETR,Entergy,Utilities,Electric Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+EOG,EOG Resources,Energy,Oil & Gas Exploration & Production,XLE,datasets/s-and-p-500-companies,2026-08-30
+EQT,EQT Corporation,Energy,Oil & Gas Exploration & Production,XLE,datasets/s-and-p-500-companies,2026-08-30
+EFX,Equifax,Industrials,Research & Consulting Services,XLI,datasets/s-and-p-500-companies,2026-08-30
+EQIX,Equinix,Real Estate,Data Center REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+ERIE,Erie Indemnity,Financials,Insurance Brokers,XLF,datasets/s-and-p-500-companies,2026-08-30
+ESS,Essex Property Trust,Real Estate,Multi-Family Residential REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+EL,Estée Lauder Companies (The),Consumer Staples,Personal Care Products,XLP,datasets/s-and-p-500-companies,2026-08-30
+EG,Everest Group,Financials,Reinsurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+EVRG,Evergy,Utilities,Electric Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+ES,Eversource Energy,Utilities,Electric Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+EXC,Exelon,Utilities,Electric Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+EXE,Expand Energy,Energy,Oil & Gas Exploration & Production,XLE,datasets/s-and-p-500-companies,2026-08-30
+EXPE,Expedia Group,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",XLY,datasets/s-and-p-500-companies,2026-08-30
+EXPD,Expeditors International,Industrials,Air Freight & Logistics,XLI,datasets/s-and-p-500-companies,2026-08-30
+EXR,Extra Space Storage,Real Estate,Self-Storage REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+XOM,ExxonMobil,Energy,Integrated Oil & Gas,XLE,datasets/s-and-p-500-companies,2026-08-30
+FFIV,"F5, Inc.",Information Technology,Communications Equipment,XLK,datasets/s-and-p-500-companies,2026-08-30
+FDS,FactSet,Financials,Financial Exchanges & Data,XLF,datasets/s-and-p-500-companies,2026-08-30
+FICO,Fair Isaac,Information Technology,Application Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+FAST,Fastenal,Industrials,Trading Companies & Distributors,XLI,datasets/s-and-p-500-companies,2026-08-30
+FRT,Federal Realty Investment Trust,Real Estate,Retail REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+FDX,FedEx,Industrials,Air Freight & Logistics,XLI,datasets/s-and-p-500-companies,2026-08-30
+FDXF,FedEx Freight,Industrials,Cargo Ground Transportation,XLI,datasets/s-and-p-500-companies,2026-08-30
+FERG,Ferguson Enterprises,Industrials,Building Products,XLI,datasets/s-and-p-500-companies,2026-08-30
+FIS,Fidelity National Information Services,Financials,Transaction & Payment Processing Services,XLF,datasets/s-and-p-500-companies,2026-08-30
+FITB,Fifth Third Bancorp,Financials,Regional Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+FSLR,First Solar,Information Technology,Semiconductors,XLK,datasets/s-and-p-500-companies,2026-08-30
+FE,FirstEnergy,Utilities,Electric Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+FISV,Fiserv,Financials,Transaction & Payment Processing Services,XLF,datasets/s-and-p-500-companies,2026-08-30
+FLEX,Flex Ltd.,Information Technology,Electronic Manufacturing Services,XLK,datasets/s-and-p-500-companies,2026-08-30
+F,Ford Motor Company,Consumer Discretionary,Automobile Manufacturers,XLY,datasets/s-and-p-500-companies,2026-08-30
+FTNT,Fortinet,Information Technology,Systems Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+FTV,Fortive,Industrials,Industrial Machinery & Supplies & Components,XLI,datasets/s-and-p-500-companies,2026-08-30
+FOXA,Fox Corporation (Class A),Communication Services,Broadcasting,XLC,datasets/s-and-p-500-companies,2026-08-30
+FOX,Fox Corporation (Class B),Communication Services,Broadcasting,XLC,datasets/s-and-p-500-companies,2026-08-30
+BEN,Franklin Resources,Financials,Asset Management & Custody Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+FCX,Freeport-McMoRan,Materials,Copper,XLB,datasets/s-and-p-500-companies,2026-08-30
+GRMN,Garmin,Consumer Discretionary,Consumer Electronics,XLY,datasets/s-and-p-500-companies,2026-08-30
+IT,Gartner,Information Technology,IT Consulting & Other Services,XLK,datasets/s-and-p-500-companies,2026-08-30
+GE,GE Aerospace,Industrials,Aerospace & Defense,XLI,datasets/s-and-p-500-companies,2026-08-30
+GEHC,GE HealthCare,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+GEV,GE Vernova,Industrials,Heavy Electrical Equipment,XLI,datasets/s-and-p-500-companies,2026-08-30
+GEN,Gen Digital,Information Technology,Systems Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+GNRC,Generac,Industrials,Heavy Electrical Equipment,XLI,datasets/s-and-p-500-companies,2026-08-30
+GD,General Dynamics,Industrials,Aerospace & Defense,XLI,datasets/s-and-p-500-companies,2026-08-30
+GIS,General Mills,Consumer Staples,Packaged Foods & Meats,XLP,datasets/s-and-p-500-companies,2026-08-30
+GM,General Motors,Consumer Discretionary,Automobile Manufacturers,XLY,datasets/s-and-p-500-companies,2026-08-30
+GPC,Genuine Parts Company,Consumer Discretionary,Distributors,XLY,datasets/s-and-p-500-companies,2026-08-30
+GILD,Gilead Sciences,Health Care,Biotechnology,XLV,datasets/s-and-p-500-companies,2026-08-30
+GPN,Global Payments,Financials,Transaction & Payment Processing Services,XLF,datasets/s-and-p-500-companies,2026-08-30
+GL,Globe Life,Financials,Life & Health Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+GDDY,GoDaddy,Information Technology,Internet Services & Infrastructure,XLK,datasets/s-and-p-500-companies,2026-08-30
+GS,Goldman Sachs,Financials,Investment Banking & Brokerage,XLF,datasets/s-and-p-500-companies,2026-08-30
+HAL,Halliburton,Energy,Oil & Gas Equipment & Services,XLE,datasets/s-and-p-500-companies,2026-08-30
+HIG,Hartford (The),Financials,Property & Casualty Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+HAS,Hasbro,Consumer Discretionary,Leisure Products,XLY,datasets/s-and-p-500-companies,2026-08-30
+HCA,HCA Healthcare,Health Care,Health Care Facilities,XLV,datasets/s-and-p-500-companies,2026-08-30
+DOC,Healthpeak Properties,Real Estate,Health Care REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+HSIC,Henry Schein,Health Care,Health Care Distributors,XLV,datasets/s-and-p-500-companies,2026-08-30
+HSY,Hershey Company (The),Consumer Staples,Packaged Foods & Meats,XLP,datasets/s-and-p-500-companies,2026-08-30
+HPE,Hewlett Packard Enterprise,Information Technology,"Technology Hardware, Storage & Peripherals",XLK,datasets/s-and-p-500-companies,2026-08-30
+HLT,Hilton Worldwide,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",XLY,datasets/s-and-p-500-companies,2026-08-30
+HD,Home Depot (The),Consumer Discretionary,Home Improvement Retail,XLY,datasets/s-and-p-500-companies,2026-08-30
+HONA,Honeywell Aerospace,Industrials,Aerospace & Defense,XLI,datasets/s-and-p-500-companies,2026-08-30
+HON,Honeywell Technologies,Industrials,Industrial Conglomerates,XLI,datasets/s-and-p-500-companies,2026-08-30
+HRL,Hormel Foods,Consumer Staples,Packaged Foods & Meats,XLP,datasets/s-and-p-500-companies,2026-08-30
+HST,Host Hotels & Resorts,Real Estate,Hotel & Resort REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+HWM,Howmet Aerospace,Industrials,Aerospace & Defense,XLI,datasets/s-and-p-500-companies,2026-08-30
+HPQ,HP Inc.,Information Technology,"Technology Hardware, Storage & Peripherals",XLK,datasets/s-and-p-500-companies,2026-08-30
+HUBB,Hubbell Incorporated,Industrials,Industrial Machinery & Supplies & Components,XLI,datasets/s-and-p-500-companies,2026-08-30
+HUM,Humana,Health Care,Managed Health Care,XLV,datasets/s-and-p-500-companies,2026-08-30
+HBAN,Huntington Bancshares,Financials,Regional Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+HII,Huntington Ingalls Industries,Industrials,Aerospace & Defense,XLI,datasets/s-and-p-500-companies,2026-08-30
+IBM,IBM,Information Technology,IT Consulting & Other Services,XLK,datasets/s-and-p-500-companies,2026-08-30
+IEX,IDEX Corporation,Industrials,Industrial Machinery & Supplies & Components,XLI,datasets/s-and-p-500-companies,2026-08-30
+IDXX,Idexx Laboratories,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+ITW,Illinois Tool Works,Industrials,Industrial Machinery & Supplies & Components,XLI,datasets/s-and-p-500-companies,2026-08-30
+INCY,Incyte,Health Care,Biotechnology,XLV,datasets/s-and-p-500-companies,2026-08-30
+IR,Ingersoll Rand,Industrials,Industrial Machinery & Supplies & Components,XLI,datasets/s-and-p-500-companies,2026-08-30
+PODD,Insulet Corporation,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+INTC,Intel,Information Technology,Semiconductors,XLK,datasets/s-and-p-500-companies,2026-08-30
+IBKR,Interactive Brokers,Financials,Investment Banking & Brokerage,XLF,datasets/s-and-p-500-companies,2026-08-30
+ICE,Intercontinental Exchange,Financials,Financial Exchanges & Data,XLF,datasets/s-and-p-500-companies,2026-08-30
+IFF,International Flavors & Fragrances,Materials,Specialty Chemicals,XLB,datasets/s-and-p-500-companies,2026-08-30
+IP,International Paper,Materials,Paper & Plastic Packaging Products & Materials,XLB,datasets/s-and-p-500-companies,2026-08-30
+INTU,Intuit,Information Technology,Application Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+ISRG,Intuitive Surgical,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+IVZ,Invesco,Financials,Asset Management & Custody Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+INVH,Invitation Homes,Real Estate,Single-Family Residential REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+IQV,IQVIA,Health Care,Life Sciences Tools & Services,XLV,datasets/s-and-p-500-companies,2026-08-30
+IRM,Iron Mountain,Real Estate,Other Specialized REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+JBHT,J.B. Hunt,Industrials,Cargo Ground Transportation,XLI,datasets/s-and-p-500-companies,2026-08-30
+JBL,Jabil,Information Technology,Electronic Manufacturing Services,XLK,datasets/s-and-p-500-companies,2026-08-30
+JKHY,Jack Henry & Associates,Financials,Transaction & Payment Processing Services,XLF,datasets/s-and-p-500-companies,2026-08-30
+J,Jacobs Solutions,Industrials,Construction & Engineering,XLI,datasets/s-and-p-500-companies,2026-08-30
+JNJ,Johnson & Johnson,Health Care,Pharmaceuticals,XLV,datasets/s-and-p-500-companies,2026-08-30
+JCI,Johnson Controls,Industrials,Building Products,XLI,datasets/s-and-p-500-companies,2026-08-30
+JPM,JPMorgan Chase,Financials,Diversified Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+KVUE,Kenvue,Consumer Staples,Personal Care Products,XLP,datasets/s-and-p-500-companies,2026-08-30
+KDP,Keurig Dr Pepper,Consumer Staples,Soft Drinks & Non-alcoholic Beverages,XLP,datasets/s-and-p-500-companies,2026-08-30
+KEY,KeyCorp,Financials,Regional Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+KEYS,Keysight Technologies,Information Technology,Electronic Equipment & Instruments,XLK,datasets/s-and-p-500-companies,2026-08-30
+KMB,Kimberly-Clark,Consumer Staples,Household Products,XLP,datasets/s-and-p-500-companies,2026-08-30
+KIM,Kimco Realty,Real Estate,Retail REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+KMI,Kinder Morgan,Energy,Oil & Gas Storage & Transportation,XLE,datasets/s-and-p-500-companies,2026-08-30
+KKR,KKR & Co.,Financials,Asset Management & Custody Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+KLAC,KLA Corporation,Information Technology,Semiconductor Materials & Equipment,XLK,datasets/s-and-p-500-companies,2026-08-30
+KHC,Kraft Heinz,Consumer Staples,Packaged Foods & Meats,XLP,datasets/s-and-p-500-companies,2026-08-30
+KR,Kroger,Consumer Staples,Food Retail,XLP,datasets/s-and-p-500-companies,2026-08-30
+LHX,L3Harris,Industrials,Aerospace & Defense,XLI,datasets/s-and-p-500-companies,2026-08-30
+LH,Labcorp,Health Care,Health Care Services,XLV,datasets/s-and-p-500-companies,2026-08-30
+LRCX,Lam Research,Information Technology,Semiconductor Materials & Equipment,XLK,datasets/s-and-p-500-companies,2026-08-30
+LVS,Las Vegas Sands,Consumer Discretionary,Casinos & Gaming,XLY,datasets/s-and-p-500-companies,2026-08-30
+LDOS,Leidos,Industrials,Diversified Support Services,XLI,datasets/s-and-p-500-companies,2026-08-30
+LEN,Lennar,Consumer Discretionary,Homebuilding,XLY,datasets/s-and-p-500-companies,2026-08-30
+LII,Lennox International,Industrials,Building Products,XLI,datasets/s-and-p-500-companies,2026-08-30
+LLY,Lilly (Eli),Health Care,Pharmaceuticals,XLV,datasets/s-and-p-500-companies,2026-08-30
+LIN,Linde plc,Materials,Industrial Gases,XLB,datasets/s-and-p-500-companies,2026-08-30
+LYV,Live Nation Entertainment,Communication Services,Movies & Entertainment,XLC,datasets/s-and-p-500-companies,2026-08-30
+LMT,Lockheed Martin,Industrials,Aerospace & Defense,XLI,datasets/s-and-p-500-companies,2026-08-30
+L,Loews Corporation,Financials,Multi-line Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+LOW,Lowe's,Consumer Discretionary,Home Improvement Retail,XLY,datasets/s-and-p-500-companies,2026-08-30
+LULU,Lululemon Athletica,Consumer Discretionary,"Apparel, Accessories & Luxury Goods",XLY,datasets/s-and-p-500-companies,2026-08-30
+LITE,Lumentum,Information Technology,Communications Equipment,XLK,datasets/s-and-p-500-companies,2026-08-30
+LYB,LyondellBasell,Materials,Specialty Chemicals,XLB,datasets/s-and-p-500-companies,2026-08-30
+MTB,M&T Bank,Financials,Regional Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+MPC,Marathon Petroleum,Energy,Oil & Gas Refining & Marketing,XLE,datasets/s-and-p-500-companies,2026-08-30
+MAR,Marriott International,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",XLY,datasets/s-and-p-500-companies,2026-08-30
+MRSH,Marsh McLennan,Financials,Insurance Brokers,XLF,datasets/s-and-p-500-companies,2026-08-30
+MLM,Martin Marietta Materials,Materials,Construction Materials,XLB,datasets/s-and-p-500-companies,2026-08-30
+MRVL,Marvell Technology,Information Technology,Semiconductors,XLK,datasets/s-and-p-500-companies,2026-08-30
+MAS,Masco,Industrials,Building Products,XLI,datasets/s-and-p-500-companies,2026-08-30
+MA,Mastercard,Financials,Transaction & Payment Processing Services,XLF,datasets/s-and-p-500-companies,2026-08-30
+MKC,McCormick & Company,Consumer Staples,Packaged Foods & Meats,XLP,datasets/s-and-p-500-companies,2026-08-30
+MCD,McDonald's,Consumer Discretionary,Restaurants,XLY,datasets/s-and-p-500-companies,2026-08-30
+MCK,McKesson Corporation,Health Care,Health Care Distributors,XLV,datasets/s-and-p-500-companies,2026-08-30
+MDT,Medtronic,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+MRK,Merck & Co.,Health Care,Pharmaceuticals,XLV,datasets/s-and-p-500-companies,2026-08-30
+META,Meta Platforms,Communication Services,Interactive Media & Services,XLC,datasets/s-and-p-500-companies,2026-08-30
+MET,MetLife,Financials,Life & Health Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+MTD,Mettler Toledo,Health Care,Life Sciences Tools & Services,XLV,datasets/s-and-p-500-companies,2026-08-30
+MGM,MGM Resorts,Consumer Discretionary,Casinos & Gaming,XLY,datasets/s-and-p-500-companies,2026-08-30
+MCHP,Microchip Technology,Information Technology,Semiconductors,XLK,datasets/s-and-p-500-companies,2026-08-30
+MU,Micron Technology,Information Technology,Semiconductors,XLK,datasets/s-and-p-500-companies,2026-08-30
+MSFT,Microsoft,Information Technology,Systems Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+MAA,Mid-America Apartment Communities,Real Estate,Multi-Family Residential REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+MRNA,Moderna,Health Care,Biotechnology,XLV,datasets/s-and-p-500-companies,2026-08-30
+TAP,Molson Coors Beverage Company,Consumer Staples,Brewers,XLP,datasets/s-and-p-500-companies,2026-08-30
+MDLZ,Mondelez International,Consumer Staples,Packaged Foods & Meats,XLP,datasets/s-and-p-500-companies,2026-08-30
+MPWR,Monolithic Power Systems,Information Technology,Semiconductors,XLK,datasets/s-and-p-500-companies,2026-08-30
+MNST,Monster Beverage,Consumer Staples,Soft Drinks & Non-alcoholic Beverages,XLP,datasets/s-and-p-500-companies,2026-08-30
+MCO,Moody's Corporation,Financials,Financial Exchanges & Data,XLF,datasets/s-and-p-500-companies,2026-08-30
+MS,Morgan Stanley,Financials,Investment Banking & Brokerage,XLF,datasets/s-and-p-500-companies,2026-08-30
+MOS,Mosaic Company (The),Materials,Fertilizers & Agricultural Chemicals,XLB,datasets/s-and-p-500-companies,2026-08-30
+MSI,Motorola Solutions,Information Technology,Communications Equipment,XLK,datasets/s-and-p-500-companies,2026-08-30
+MSCI,MSCI,Financials,Financial Exchanges & Data,XLF,datasets/s-and-p-500-companies,2026-08-30
+NDAQ,"Nasdaq, Inc.",Financials,Financial Exchanges & Data,XLF,datasets/s-and-p-500-companies,2026-08-30
+NTAP,NetApp,Information Technology,"Technology Hardware, Storage & Peripherals",XLK,datasets/s-and-p-500-companies,2026-08-30
+NFLX,Netflix,Communication Services,Movies & Entertainment,XLC,datasets/s-and-p-500-companies,2026-08-30
+NEM,Newmont,Materials,Gold,XLB,datasets/s-and-p-500-companies,2026-08-30
+NWSA,News Corp (Class A),Communication Services,Publishing,XLC,datasets/s-and-p-500-companies,2026-08-30
+NWS,News Corp (Class B),Communication Services,Publishing,XLC,datasets/s-and-p-500-companies,2026-08-30
+NEE,NextEra Energy,Utilities,Multi-Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+NKE,"Nike, Inc.",Consumer Discretionary,"Apparel, Accessories & Luxury Goods",XLY,datasets/s-and-p-500-companies,2026-08-30
+NI,NiSource,Utilities,Multi-Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+NDSN,Nordson Corporation,Industrials,Industrial Machinery & Supplies & Components,XLI,datasets/s-and-p-500-companies,2026-08-30
+NSC,Norfolk Southern,Industrials,Rail Transportation,XLI,datasets/s-and-p-500-companies,2026-08-30
+NTRS,Northern Trust,Financials,Asset Management & Custody Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+NOC,Northrop Grumman,Industrials,Aerospace & Defense,XLI,datasets/s-and-p-500-companies,2026-08-30
+NCLH,Norwegian Cruise Line Holdings,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",XLY,datasets/s-and-p-500-companies,2026-08-30
+NRG,NRG Energy,Utilities,Independent Power Producers & Energy Traders,XLU,datasets/s-and-p-500-companies,2026-08-30
+NUE,Nucor,Materials,Steel,XLB,datasets/s-and-p-500-companies,2026-08-30
+NVDA,Nvidia,Information Technology,Semiconductors,XLK,datasets/s-and-p-500-companies,2026-08-30
+NVR,"NVR, Inc.",Consumer Discretionary,Homebuilding,XLY,datasets/s-and-p-500-companies,2026-08-30
+NXPI,NXP Semiconductors,Information Technology,Semiconductors,XLK,datasets/s-and-p-500-companies,2026-08-30
+ORLY,O'Reilly Automotive,Consumer Discretionary,Automotive Retail,XLY,datasets/s-and-p-500-companies,2026-08-30
+OXY,Occidental Petroleum,Energy,Oil & Gas Exploration & Production,XLE,datasets/s-and-p-500-companies,2026-08-30
+ODFL,Old Dominion,Industrials,Cargo Ground Transportation,XLI,datasets/s-and-p-500-companies,2026-08-30
+OMC,Omnicom Group,Communication Services,Advertising,XLC,datasets/s-and-p-500-companies,2026-08-30
+ON,ON Semiconductor,Information Technology,Semiconductors,XLK,datasets/s-and-p-500-companies,2026-08-30
+OKE,Oneok,Energy,Oil & Gas Storage & Transportation,XLE,datasets/s-and-p-500-companies,2026-08-30
+ORCL,Oracle Corporation,Information Technology,Application Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+OTIS,Otis Worldwide,Industrials,Industrial Machinery & Supplies & Components,XLI,datasets/s-and-p-500-companies,2026-08-30
+PCAR,Paccar,Industrials,Construction Machinery & Heavy Transportation Equipment,XLI,datasets/s-and-p-500-companies,2026-08-30
+PKG,Packaging Corporation of America,Materials,Paper & Plastic Packaging Products & Materials,XLB,datasets/s-and-p-500-companies,2026-08-30
+PLTR,Palantir Technologies,Information Technology,Application Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+PANW,Palo Alto Networks,Information Technology,Systems Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+PSKY,Paramount Skydance Corporation,Communication Services,Movies & Entertainment,XLC,datasets/s-and-p-500-companies,2026-08-30
+PH,Parker Hannifin,Industrials,Industrial Machinery & Supplies & Components,XLI,datasets/s-and-p-500-companies,2026-08-30
+PAYX,Paychex,Industrials,Human Resource & Employment Services,XLI,datasets/s-and-p-500-companies,2026-08-30
+PYPL,PayPal,Financials,Transaction & Payment Processing Services,XLF,datasets/s-and-p-500-companies,2026-08-30
+PNR,Pentair,Industrials,Industrial Machinery & Supplies & Components,XLI,datasets/s-and-p-500-companies,2026-08-30
+PEP,PepsiCo,Consumer Staples,Soft Drinks & Non-alcoholic Beverages,XLP,datasets/s-and-p-500-companies,2026-08-30
+PFE,Pfizer,Health Care,Pharmaceuticals,XLV,datasets/s-and-p-500-companies,2026-08-30
+PCG,PG&E Corporation,Utilities,Multi-Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+PM,Philip Morris International,Consumer Staples,Tobacco,XLP,datasets/s-and-p-500-companies,2026-08-30
+PSX,Phillips 66,Energy,Oil & Gas Refining & Marketing,XLE,datasets/s-and-p-500-companies,2026-08-30
+PNW,Pinnacle West Capital,Utilities,Multi-Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+PNC,PNC Financial Services,Financials,Diversified Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+PPG,PPG Industries,Materials,Specialty Chemicals,XLB,datasets/s-and-p-500-companies,2026-08-30
+PPL,PPL Corporation,Utilities,Electric Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+PFG,Principal Financial Group,Financials,Life & Health Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+PG,Procter & Gamble,Consumer Staples,Personal Care Products,XLP,datasets/s-and-p-500-companies,2026-08-30
+PGR,Progressive Corporation,Financials,Property & Casualty Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+PLD,Prologis,Real Estate,Industrial REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+PRU,Prudential Financial,Financials,Life & Health Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+PEG,Public Service Enterprise Group,Utilities,Electric Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+PTC,PTC Inc.,Information Technology,Application Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+PSA,Public Storage,Real Estate,Self-Storage REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+PHM,PulteGroup,Consumer Discretionary,Homebuilding,XLY,datasets/s-and-p-500-companies,2026-08-30
+PWR,Quanta Services,Industrials,Construction & Engineering,XLI,datasets/s-and-p-500-companies,2026-08-30
+QCOM,Qualcomm,Information Technology,Semiconductors,XLK,datasets/s-and-p-500-companies,2026-08-30
+DGX,Quest Diagnostics,Health Care,Health Care Services,XLV,datasets/s-and-p-500-companies,2026-08-30
+Q,Qnity Electronics,Information Technology,Semiconductor Materials & Equipment,XLK,datasets/s-and-p-500-companies,2026-08-30
+RL,Ralph Lauren Corporation,Consumer Discretionary,"Apparel, Accessories & Luxury Goods",XLY,datasets/s-and-p-500-companies,2026-08-30
+RJF,Raymond James Financial,Financials,Investment Banking & Brokerage,XLF,datasets/s-and-p-500-companies,2026-08-30
+RDDT,Reddit,Communication Services,Interactive Media & Services,XLC,datasets/s-and-p-500-companies,2026-08-30
+RTX,RTX Corporation,Industrials,Aerospace & Defense,XLI,datasets/s-and-p-500-companies,2026-08-30
+O,Realty Income,Real Estate,Retail REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+REG,Regency Centers,Real Estate,Retail REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+REGN,Regeneron Pharmaceuticals,Health Care,Biotechnology,XLV,datasets/s-and-p-500-companies,2026-08-30
+RF,Regions Financial Corporation,Financials,Regional Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+RSG,Republic Services,Industrials,Environmental & Facilities Services,XLI,datasets/s-and-p-500-companies,2026-08-30
+RMD,ResMed|,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+RVTY,Revvity,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+HOOD,Robinhood Markets,Financials,Investment Banking & Brokerage,XLF,datasets/s-and-p-500-companies,2026-08-30
+ROK,Rockwell Automation,Industrials,Electrical Components & Equipment,XLI,datasets/s-and-p-500-companies,2026-08-30
+ROL,"Rollins, Inc.",Industrials,Environmental & Facilities Services,XLI,datasets/s-and-p-500-companies,2026-08-30
+ROP,Roper Technologies,Information Technology,Electronic Equipment & Instruments,XLK,datasets/s-and-p-500-companies,2026-08-30
+ROST,Ross Stores,Consumer Discretionary,Apparel Retail,XLY,datasets/s-and-p-500-companies,2026-08-30
+RCL,Royal Caribbean Group,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",XLY,datasets/s-and-p-500-companies,2026-08-30
+SPGI,S&P Global,Financials,Financial Exchanges & Data,XLF,datasets/s-and-p-500-companies,2026-08-30
+CRM,Salesforce,Information Technology,Application Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+SNDK,Sandisk,Information Technology,"Technology Hardware, Storage & Peripherals",XLK,datasets/s-and-p-500-companies,2026-08-30
+SBAC,SBA Communications,Real Estate,Telecom Tower REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+SLB,Schlumberger,Energy,Oil & Gas Equipment & Services,XLE,datasets/s-and-p-500-companies,2026-08-30
+STX,Seagate Technology,Information Technology,"Technology Hardware, Storage & Peripherals",XLK,datasets/s-and-p-500-companies,2026-08-30
+SRE,Sempra,Utilities,Multi-Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+NOW,ServiceNow,Information Technology,Systems Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+SHW,Sherwin-Williams,Materials,Specialty Chemicals,XLB,datasets/s-and-p-500-companies,2026-08-30
+SPG,Simon Property Group,Real Estate,Retail REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+SWKS,Skyworks Solutions,Information Technology,Semiconductors,XLK,datasets/s-and-p-500-companies,2026-08-30
+SJM,J.M. Smucker Company (The),Consumer Staples,Packaged Foods & Meats,XLP,datasets/s-and-p-500-companies,2026-08-30
+SW,Smurfit Westrock,Materials,Paper & Plastic Packaging Products & Materials,XLB,datasets/s-and-p-500-companies,2026-08-30
+SNA,Snap-on,Industrials,Industrial Machinery & Supplies & Components,XLI,datasets/s-and-p-500-companies,2026-08-30
+SOLV,Solventum,Health Care,Health Care Technology,XLV,datasets/s-and-p-500-companies,2026-08-30
+SO,Southern Company,Utilities,Electric Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+LUV,Southwest Airlines,Industrials,Passenger Airlines,XLI,datasets/s-and-p-500-companies,2026-08-30
+SWK,Stanley Black & Decker,Industrials,Industrial Machinery & Supplies & Components,XLI,datasets/s-and-p-500-companies,2026-08-30
+SBUX,Starbucks,Consumer Discretionary,Restaurants,XLY,datasets/s-and-p-500-companies,2026-08-30
+STT,State Street Corporation,Financials,Asset Management & Custody Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+STLD,Steel Dynamics,Materials,Steel,XLB,datasets/s-and-p-500-companies,2026-08-30
+STE,Steris,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+SYK,Stryker Corporation,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+SMCI,Supermicro,Information Technology,"Technology Hardware, Storage & Peripherals",XLK,datasets/s-and-p-500-companies,2026-08-30
+SYF,Synchrony Financial,Financials,Consumer Finance,XLF,datasets/s-and-p-500-companies,2026-08-30
+SNPS,Synopsys,Information Technology,Application Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+SYY,Sysco,Consumer Staples,Food Distributors,XLP,datasets/s-and-p-500-companies,2026-08-30
+TMUS,T-Mobile US,Communication Services,Wireless Telecommunication Services,XLC,datasets/s-and-p-500-companies,2026-08-30
+TROW,T. Rowe Price,Financials,Asset Management & Custody Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+TTWO,Take-Two Interactive,Communication Services,Interactive Home Entertainment,XLC,datasets/s-and-p-500-companies,2026-08-30
+TPR,"Tapestry, Inc.",Consumer Discretionary,"Apparel, Accessories & Luxury Goods",XLY,datasets/s-and-p-500-companies,2026-08-30
+TRGP,Targa Resources,Energy,Oil & Gas Storage & Transportation,XLE,datasets/s-and-p-500-companies,2026-08-30
+TGT,Target Corporation,Consumer Staples,Consumer Staples Merchandise Retail,XLP,datasets/s-and-p-500-companies,2026-08-30
+TEL,TE Connectivity,Information Technology,Electronic Manufacturing Services,XLK,datasets/s-and-p-500-companies,2026-08-30
+TDY,Teledyne Technologies,Information Technology,Electronic Equipment & Instruments,XLK,datasets/s-and-p-500-companies,2026-08-30
+TER,Teradyne,Information Technology,Semiconductor Materials & Equipment,XLK,datasets/s-and-p-500-companies,2026-08-30
+TSLA,"Tesla, Inc.",Consumer Discretionary,Automobile Manufacturers,XLY,datasets/s-and-p-500-companies,2026-08-30
+TXN,Texas Instruments,Information Technology,Semiconductors,XLK,datasets/s-and-p-500-companies,2026-08-30
+TPL,Texas Pacific Land Corporation,Energy,Oil & Gas Exploration & Production,XLE,datasets/s-and-p-500-companies,2026-08-30
+TXT,Textron,Industrials,Aerospace & Defense,XLI,datasets/s-and-p-500-companies,2026-08-30
+TMO,Thermo Fisher Scientific,Health Care,Life Sciences Tools & Services,XLV,datasets/s-and-p-500-companies,2026-08-30
+TJX,TJX Companies,Consumer Discretionary,Apparel Retail,XLY,datasets/s-and-p-500-companies,2026-08-30
+TKO,TKO Group Holdings,Communication Services,Movies & Entertainment,XLC,datasets/s-and-p-500-companies,2026-08-30
+TTD,Trade Desk (The),Communication Services,Advertising,XLC,datasets/s-and-p-500-companies,2026-08-30
+TSCO,Tractor Supply,Consumer Discretionary,Other Specialty Retail,XLY,datasets/s-and-p-500-companies,2026-08-30
+TT,Trane Technologies,Industrials,Building Products,XLI,datasets/s-and-p-500-companies,2026-08-30
+TDG,TransDigm Group,Industrials,Aerospace & Defense,XLI,datasets/s-and-p-500-companies,2026-08-30
+TRV,Travelers Companies (The),Financials,Property & Casualty Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+TRMB,Trimble Inc.,Information Technology,Application Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+TFC,Truist Financial,Financials,Diversified Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+TYL,Tyler Technologies,Information Technology,Application Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+TSN,Tyson Foods,Consumer Staples,Packaged Foods & Meats,XLP,datasets/s-and-p-500-companies,2026-08-30
+USB,U.S. Bancorp,Financials,Diversified Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+UBER,Uber,Industrials,Passenger Ground Transportation,XLI,datasets/s-and-p-500-companies,2026-08-30
+UDR,"UDR, Inc.",Real Estate,Multi-Family Residential REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+ULTA,Ulta Beauty,Consumer Discretionary,Other Specialty Retail,XLY,datasets/s-and-p-500-companies,2026-08-30
+UNP,Union Pacific Corporation,Industrials,Rail Transportation,XLI,datasets/s-and-p-500-companies,2026-08-30
+UAL,United Airlines Holdings,Industrials,Passenger Airlines,XLI,datasets/s-and-p-500-companies,2026-08-30
+UPS,United Parcel Service,Industrials,Air Freight & Logistics,XLI,datasets/s-and-p-500-companies,2026-08-30
+URI,United Rentals,Industrials,Trading Companies & Distributors,XLI,datasets/s-and-p-500-companies,2026-08-30
+UNH,UnitedHealth Group,Health Care,Managed Health Care,XLV,datasets/s-and-p-500-companies,2026-08-30
+UHS,Universal Health Services,Health Care,Health Care Facilities,XLV,datasets/s-and-p-500-companies,2026-08-30
+VLO,Valero Energy,Energy,Oil & Gas Refining & Marketing,XLE,datasets/s-and-p-500-companies,2026-08-30
+VEEV,Veeva Systems,Health Care,Health Care Technology,XLV,datasets/s-and-p-500-companies,2026-08-30
+VTR,Ventas,Real Estate,Health Care REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+VLTO,Veralto,Industrials,Environmental & Facilities Services,XLI,datasets/s-and-p-500-companies,2026-08-30
+VRSN,Verisign,Information Technology,Internet Services & Infrastructure,XLK,datasets/s-and-p-500-companies,2026-08-30
+VRSK,Verisk Analytics,Industrials,Research & Consulting Services,XLI,datasets/s-and-p-500-companies,2026-08-30
+VZ,Verizon,Communication Services,Integrated Telecommunication Services,XLC,datasets/s-and-p-500-companies,2026-08-30
+VRTX,Vertex Pharmaceuticals,Health Care,Biotechnology,XLV,datasets/s-and-p-500-companies,2026-08-30
+VRT,Vertiv,Industrials,Electrical Components & Equipment,XLI,datasets/s-and-p-500-companies,2026-08-30
+VTRS,Viatris,Health Care,Pharmaceuticals,XLV,datasets/s-and-p-500-companies,2026-08-30
+VICI,Vici Properties,Real Estate,Hotel & Resort REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+V,Visa Inc.,Financials,Transaction & Payment Processing Services,XLF,datasets/s-and-p-500-companies,2026-08-30
+VST,Vistra Corp.,Utilities,Electric Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+VMRK,Vivmark Residential,Real Estate,Multi-Family Residential REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+VMC,Vulcan Materials Company,Materials,Construction Materials,XLB,datasets/s-and-p-500-companies,2026-08-30
+WRB,W. R. Berkley Corporation,Financials,Property & Casualty Insurance,XLF,datasets/s-and-p-500-companies,2026-08-30
+GWW,W. W. Grainger,Industrials,Industrial Machinery & Supplies & Components,XLI,datasets/s-and-p-500-companies,2026-08-30
+WAB,Wabtec,Industrials,Construction Machinery & Heavy Transportation Equipment,XLI,datasets/s-and-p-500-companies,2026-08-30
+WMT,Walmart,Consumer Staples,Consumer Staples Merchandise Retail,XLP,datasets/s-and-p-500-companies,2026-08-30
+DIS,Walt Disney Company (The),Communication Services,Movies & Entertainment,XLC,datasets/s-and-p-500-companies,2026-08-30
+WBD,Warner Bros. Discovery,Communication Services,Broadcasting,XLC,datasets/s-and-p-500-companies,2026-08-30
+WM,Waste Management,Industrials,Environmental & Facilities Services,XLI,datasets/s-and-p-500-companies,2026-08-30
+WAT,Waters Corporation,Health Care,Life Sciences Tools & Services,XLV,datasets/s-and-p-500-companies,2026-08-30
+WEC,WEC Energy Group,Utilities,Electric Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+WFC,Wells Fargo,Financials,Diversified Banks,XLF,datasets/s-and-p-500-companies,2026-08-30
+WELL,Welltower,Real Estate,Health Care REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+WST,West Pharmaceutical Services,Health Care,Health Care Supplies,XLV,datasets/s-and-p-500-companies,2026-08-30
+WDC,Western Digital,Information Technology,"Technology Hardware, Storage & Peripherals",XLK,datasets/s-and-p-500-companies,2026-08-30
+WY,Weyerhaeuser,Real Estate,Timber REITs,XLRE,datasets/s-and-p-500-companies,2026-08-30
+WSM,"Williams-Sonoma, Inc.",Consumer Discretionary,Homefurnishing Retail,XLY,datasets/s-and-p-500-companies,2026-08-30
+WMB,Williams Companies,Energy,Oil & Gas Storage & Transportation,XLE,datasets/s-and-p-500-companies,2026-08-30
+WTW,Willis Towers Watson,Financials,Insurance Brokers,XLF,datasets/s-and-p-500-companies,2026-08-30
+WDAY,"Workday, Inc.",Information Technology,Application Software,XLK,datasets/s-and-p-500-companies,2026-08-30
+WYNN,Wynn Resorts,Consumer Discretionary,Casinos & Gaming,XLY,datasets/s-and-p-500-companies,2026-08-30
+XEL,Xcel Energy,Utilities,Multi-Utilities,XLU,datasets/s-and-p-500-companies,2026-08-30
+XYL,Xylem Inc.,Industrials,Industrial Machinery & Supplies & Components,XLI,datasets/s-and-p-500-companies,2026-08-30
+YUM,Yum! Brands,Consumer Discretionary,Restaurants,XLY,datasets/s-and-p-500-companies,2026-08-30
+ZBRA,Zebra Technologies,Information Technology,Electronic Equipment & Instruments,XLK,datasets/s-and-p-500-companies,2026-08-30
+ZBH,Zimmer Biomet,Health Care,Health Care Equipment,XLV,datasets/s-and-p-500-companies,2026-08-30
+ZTS,Zoetis,Health Care,Pharmaceuticals,XLV,datasets/s-and-p-500-companies,2026-08-30
+XLC,Communication Services Select Sector SPDR Fund,Communication Services,Sector ETF,XLC,State Street Select Sector SPDR,2026-08-30
+XLY,Consumer Discretionary Select Sector SPDR Fund,Consumer Discretionary,Sector ETF,XLY,State Street Select Sector SPDR,2026-08-30
+XLP,Consumer Staples Select Sector SPDR Fund,Consumer Staples,Sector ETF,XLP,State Street Select Sector SPDR,2026-08-30
+XLE,Energy Select Sector SPDR Fund,Energy,Sector ETF,XLE,State Street Select Sector SPDR,2026-08-30
+XLF,Financial Select Sector SPDR Fund,Financials,Sector ETF,XLF,State Street Select Sector SPDR,2026-08-30
+XLV,Health Care Select Sector SPDR Fund,Health Care,Sector ETF,XLV,State Street Select Sector SPDR,2026-08-30
+XLI,Industrial Select Sector SPDR Fund,Industrials,Sector ETF,XLI,State Street Select Sector SPDR,2026-08-30
+XLB,Materials Select Sector SPDR Fund,Materials,Sector ETF,XLB,State Street Select Sector SPDR,2026-08-30
+XLRE,Real Estate Select Sector SPDR Fund,Real Estate,Sector ETF,XLRE,State Street Select Sector SPDR,2026-08-30
+XLK,Technology Select Sector SPDR Fund,Information Technology,Sector ETF,XLK,State Street Select Sector SPDR,2026-08-30
+XLU,Utilities Select Sector SPDR Fund,Utilities,Sector ETF,XLU,State Street Select Sector SPDR,2026-08-30

@@ -1,0 +1,15 @@
+.env
+.DS_Store
+.venv/
+*.egg-info/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.streamlit/secrets.toml
+*.pyc
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/*.log
+output/
+tmp/
