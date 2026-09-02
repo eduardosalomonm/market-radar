@@ -1,5 +1,7 @@
 # Market Radar
 
+**Public showcase:** [market-radar-insights.streamlit.app](https://market-radar-insights.streamlit.app/)
+
 Market Radar is a personal, local after-close dashboard for transparent swing-trading research. It scans a dated S&P 500 universe plus the eleven Select Sector SPDR ETFs, compares price movement with an approximation of options pressure, places enriched names into four market-behavior quadrants, and forward-tracks frozen conditional ideas.
 
 It never connects to a brokerage, sends an order, or sizes a position. The evidence score is a reproducible ranking heuristic—not a probability, return forecast, or financial recommendation.
