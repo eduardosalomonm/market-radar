@@ -58,6 +58,26 @@ QUADRANT_COLORS = {
     "Chase": "#60a5fa",
     "Hedged Rally": "#f6c453",
 }
+PAGES = [
+    "1 · Executive Brief",
+    "2 · Global Macro",
+    "3 · Opportunity Map",
+    "4 · Trade Ideas",
+    "5 · Stock Explorer",
+    "6 · Watchlist",
+    "7 · Paper Results",
+    "Method & Data",
+]
+PAGE_DESCRIPTIONS = {
+    "1 · Executive Brief": "Today's market story, risk posture and highest-conviction conditional setups.",
+    "2 · Global Macro": "How equities, rates, credit, the dollar and commodities fit together.",
+    "3 · Opportunity Map": "Where price strength and options positioning agree—or diverge.",
+    "4 · Trade Ideas": "Ranked setups with a plain-English thesis, trigger, risk and targets.",
+    "5 · Stock Explorer": "A focused company view with current saved price, trend and relative strength.",
+    "6 · Watchlist": "Find a company by name or ticker and keep the names you care about together.",
+    "7 · Paper Results": "Forward outcomes from frozen ideas; never rewritten with hindsight.",
+    "Method & Data": "Formulas, data health, limitations and the audit trail behind every score.",
+}
 
 st.set_page_config(page_title="Market Radar", page_icon="◉", layout="wide")
 st.markdown(
@@ -77,7 +97,26 @@ st.markdown(
     .radar-hero p {font-size:1.02rem;line-height:1.55;color:#c9d7ec;margin:0;}
     .radar-status {display:inline-block;border-radius:999px;background:#15283e;border:1px solid #35577d;padding:4px 10px;color:#9fc5ff;font-size:.72rem;font-weight:700;letter-spacing:.08em;}
     .radar-section-note {color:#a9b7ca;font-size:.92rem;line-height:1.55;}
+    .radar-nav-intro {margin:.1rem 0 -.3rem;color:#7da8ee;font-size:.72rem;font-weight:800;letter-spacing:.11em;text-transform:uppercase;}
     div[data-testid="stAlert"] {border-radius:12px;}
+    [data-testid="stMainBlockContainer"] {max-width:1280px;padding-top:4.5rem;padding-bottom:4rem;}
+    @media (max-width: 768px) {
+      [data-testid="stMainBlockContainer"] {padding:4.25rem 1rem 3rem;}
+      .radar-nav-intro {padding-top:2.5rem;}
+      h1 {font-size:2rem !important;line-height:1.12 !important;}
+      h2 {font-size:1.45rem !important;line-height:1.2 !important;}
+      h3 {font-size:1.2rem !important;line-height:1.25 !important;}
+      .radar-hero {padding:18px 18px;margin:.25rem 0 1rem;border-radius:16px;}
+      .radar-hero h2 {font-size:1.38rem !important;}
+      .radar-hero p,.radar-reason {font-size:.95rem;line-height:1.5;}
+      .radar-card {padding:15px;margin:.4rem 0 .8rem;}
+      [data-testid="stMetric"] {padding:12px;}
+      [data-testid="stMetricValue"] {font-size:1.65rem;}
+      div.stButton > button, div.stDownloadButton > button {min-height:44px;width:100%;}
+      [data-testid="stSelectbox"] [data-baseweb="select"] {min-height:44px;}
+      [data-testid="stDataFrame"] {max-width:100%;overflow-x:auto;}
+      .js-plotly-plot {max-width:100%;}
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -145,22 +184,8 @@ def save_scan(provider, label):
     st.rerun()
 
 
-st.sidebar.markdown('<div class="radar-kicker">After-close intelligence</div>', unsafe_allow_html=True)
+st.sidebar.markdown('<div class="radar-kicker">Data & settings</div>', unsafe_allow_html=True)
 st.sidebar.title("Market Radar")
-view = st.sidebar.radio(
-    "Navigate",
-    [
-        "1 · Executive Brief",
-        "2 · Global Macro",
-        "3 · Opportunity Map",
-        "4 · Trade Ideas",
-        "5 · Stock Explorer",
-        "6 · Watchlist",
-        "7 · Paper Results",
-        "Method & Data",
-    ],
-    label_visibility="collapsed",
-)
 professional_detail = st.sidebar.toggle(
     "Professional detail",
     value=False,
@@ -242,6 +267,15 @@ def compact_dollars(value: float) -> str:
         return f"${value / 1_000_000:.1f}M"
     return f"${value:,.0f}"
 
+
+st.markdown('<div class="radar-nav-intro">Dashboard menu</div>', unsafe_allow_html=True)
+view = st.selectbox(
+    "Explore dashboard",
+    PAGES,
+    key="active_dashboard_view",
+    help="This menu stays visible on phones. Choose any section to jump directly to it.",
+)
+st.caption(PAGE_DESCRIPTIONS[view])
 
 st.title("Market Radar")
 st.caption("Global market context × stock selection × options evidence. Research only—no broker execution.")
