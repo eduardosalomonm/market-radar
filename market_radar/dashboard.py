@@ -78,6 +78,16 @@ PAGE_DESCRIPTIONS = {
     "7 · Paper Results": "Forward outcomes from frozen ideas; never rewritten with hindsight.",
     "Method & Data": "Formulas, data health, limitations and the audit trail behind every score.",
 }
+PAGE_LABELS = {
+    "1 · Executive Brief": "Overview",
+    "2 · Global Macro": "Global Economy",
+    "3 · Opportunity Map": "Market Map",
+    "4 · Trade Ideas": "Trade Ideas",
+    "5 · Stock Explorer": "Stock Explorer",
+    "6 · Watchlist": "Watchlist",
+    "7 · Paper Results": "Paper Results",
+    "Method & Data": "Method & Data",
+}
 
 st.set_page_config(page_title="Market Radar", page_icon="◉", layout="wide")
 st.markdown(
@@ -97,12 +107,13 @@ st.markdown(
     .radar-hero p {font-size:1.02rem;line-height:1.55;color:#c9d7ec;margin:0;}
     .radar-status {display:inline-block;border-radius:999px;background:#15283e;border:1px solid #35577d;padding:4px 10px;color:#9fc5ff;font-size:.72rem;font-weight:700;letter-spacing:.08em;}
     .radar-section-note {color:#a9b7ca;font-size:.92rem;line-height:1.55;}
-    .radar-nav-intro {margin:.1rem 0 -.3rem;color:#7da8ee;font-size:.72rem;font-weight:800;letter-spacing:.11em;text-transform:uppercase;}
+    .radar-nav-spacer {height:.5rem;}
     div[data-testid="stAlert"] {border-radius:12px;}
+    [data-testid="stPopover"] > button {min-height:46px;justify-content:space-between;border-color:#38537a;}
+    [data-testid="stRadio"] label {min-height:44px;align-items:center;}
     [data-testid="stMainBlockContainer"] {max-width:1280px;padding-top:4.5rem;padding-bottom:4rem;}
     @media (max-width: 768px) {
       [data-testid="stMainBlockContainer"] {padding:4.25rem 1rem 3rem;}
-      .radar-nav-intro {padding-top:2.5rem;}
       h1 {font-size:2rem !important;line-height:1.12 !important;}
       h2 {font-size:1.45rem !important;line-height:1.2 !important;}
       h3 {font-size:1.2rem !important;line-height:1.25 !important;}
@@ -268,17 +279,19 @@ def compact_dollars(value: float) -> str:
     return f"${value:,.0f}"
 
 
-st.markdown('<div class="radar-nav-intro">Dashboard menu</div>', unsafe_allow_html=True)
-view = st.selectbox(
-    "Explore dashboard",
-    PAGES,
-    key="active_dashboard_view",
-    help="This menu stays visible on phones. Choose any section to jump directly to it.",
-)
-st.caption(PAGE_DESCRIPTIONS[view])
-
+st.markdown('<div class="radar-nav-spacer" aria-hidden="true"></div>', unsafe_allow_html=True)
 st.title("Market Radar")
 st.caption("Global market context × stock selection × options evidence. Research only—no broker execution.")
+with st.popover("Menu", use_container_width=True):
+    view = st.radio(
+        "Sections",
+        PAGES,
+        key="active_dashboard_view",
+        format_func=PAGE_LABELS.get,
+        label_visibility="collapsed",
+    )
+st.caption(f"Current: {PAGE_LABELS[view]} · {PAGE_DESCRIPTIONS[view]}")
+
 mode_label = "SYNTHETIC DEMO DATA" if scan.provider == "demo" else "LIVE MARKET DATA"
 st.markdown(f'<span class="radar-status">{mode_label}</span>', unsafe_allow_html=True)
 st.caption(
@@ -331,6 +344,23 @@ def metric_row():
 
 def scatter_chart():
     figure = go.Figure()
+    for x0, x1, y0, y1, color in [
+        (-100, 0, 0, 100, QUADRANT_COLORS["Contrarian Bid"]),
+        (0, 100, 0, 100, QUADRANT_COLORS["Chase"]),
+        (-100, 0, -100, 0, QUADRANT_COLORS["Fear"]),
+        (0, 100, -100, 0, QUADRANT_COLORS["Hedged Rally"]),
+    ]:
+        figure.add_shape(
+            type="rect",
+            x0=x0,
+            x1=x1,
+            y0=y0,
+            y1=y1,
+            fillcolor=color,
+            opacity=0.07,
+            line_width=0,
+            layer="below",
+        )
     label_tickers = {signal.ticker for signal in ranked_signals[:12]}
     for quadrant, color in QUADRANT_COLORS.items():
         rows = [signal for signal in enriched if signal.quadrant == quadrant]
@@ -354,7 +384,8 @@ def scatter_chart():
                     [row.ticker, row.sector, row.evidence_score, row.valid_contracts, row.volume_ratio] for row in rows
                 ],
                 hovertemplate=(
-                    "<b>%{customdata[0]}</b><br>%{customdata[1]}<br>Price axis %{x:.1f}<br>Options axis %{y:.1f}"
+                    "<b>%{customdata[0]}</b><br>%{customdata[1]}<br>Relative price %{x:.1f}"
+                    "<br>Estimated options sentiment %{y:.1f}"
                     "<br>Evidence %{customdata[2]:.1f}<br>Contracts %{customdata[3]}<br>Volume ratio %{customdata[4]:.2f}<extra></extra>"
                 ),
             )
@@ -369,9 +400,9 @@ def scatter_chart():
     ]:
         figure.add_annotation(x=x, y=y, text=label, showarrow=False, font={"size": 11, "color": "#8da2bd"})
     figure.update_layout(
-        title="Price movement vs. inferred options pressure",
-        xaxis_title="Price axis · sector / SPY relative rank",
-        yaxis_title="Options pressure · − bearish / + bullish",
+        title="How price movement and options sentiment line up",
+        xaxis_title="Relative price · lagging ← 0 → leading",
+        yaxis_title="Estimated options sentiment · bearish ↓ 0 ↑ bullish",
         template="plotly_dark",
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(7,11,18,.5)",
@@ -379,6 +410,8 @@ def scatter_chart():
         margin={"l": 30, "r": 20, "t": 65, "b": 35},
         height=570,
     )
+    figure.update_xaxes(range=[-105, 105])
+    figure.update_yaxes(range=[-105, 105])
     return figure
 
 
@@ -837,16 +870,43 @@ elif view == "3 · Opportunity Map":
     st.plotly_chart(market_driver_heatmap(driver_color, driver_size), use_container_width=True)
     st.divider()
     st.subheader("Where price and options activity agree—or conflict")
-    st.caption(
-        "Move right for stronger relative price performance and up for more bullish inferred options pressure. "
-        "Larger dots have higher evidence scores. Hover over any dot for its inputs."
+    st.markdown(
+        """
+        **How to read this chart**
+
+        - **Each dot is one stock.** Its position compares two different signals.
+        - **Left ↔ right is relative price, not a return percentage.** It blends five-session performance versus the
+          stock's sector with twenty-session performance versus the S&P 500. Leaders move right; laggards move left.
+        - **Down ↕ up is estimated options sentiment.** Trades near the ask are treated as buyer-initiated and trades
+          near the bid as seller-initiated. Bought calls and sold puts move the score up; bought puts and sold calls
+          move it down.
+        - **Dot size is evidence strength.** Farther from the center means a clearer directional reading; near the
+          center means the signals are weak or mixed.
+        """
+    )
+    st.info(
+        "The cross at zero is deliberate: the top-right and bottom-left zones show price and options agreeing; "
+        "the other two zones show a disagreement that may signal reversal interest or hedging."
     )
     st.plotly_chart(scatter_chart(), use_container_width=True)
-    with st.expander("What do the four areas mean?"):
-        columns = st.columns(4)
-        for column, (quadrant, explanation) in zip(columns, QUADRANT_EXPLANATIONS.items()):
-            column.markdown(f"**{quadrant}**")
-            column.caption(explanation)
+    st.markdown("**The four zones**")
+    quadrant_items = list(QUADRANT_EXPLANATIONS.items())
+    for start in range(0, len(quadrant_items), 2):
+        columns = st.columns(2)
+        for column, (quadrant, explanation) in zip(columns, quadrant_items[start : start + 2]):
+            with column.container(border=True):
+                st.markdown(f"**{quadrant}**")
+                st.caption(explanation)
+    with st.expander("How are the two axes calculated?"):
+        st.markdown(
+            """
+            - **Relative price (−100 to +100):** 60% five-session sector-relative rank plus 40% twenty-session
+              S&P 500-relative rank. Zero is the middle of the scanned group—not a zero return.
+            - **Estimated options sentiment (−100 to +100):** net bullish premium divided by total included premium
+              across valid contracts. It is an approximation from delayed indicative snapshots, not complete market
+              flow and not a probability that the stock will rise or fall.
+            """
+        )
     rotation, mix = st.columns([0.67, 0.33])
     with rotation:
         st.caption("Green means a sector beat SPY that week; red means it lagged SPY.")
