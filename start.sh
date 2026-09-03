@@ -6,7 +6,7 @@ cd "$PROJECT_DIR"
 
 PYTHON_BIN="${PYTHON:-python3}"
 if ! "$PYTHON_BIN" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 9) else 1)'; then
-  echo "Market Radar requires Python 3.9 or newer. Set PYTHON=/absolute/path/to/python3."
+  echo "FolioShift requires Python 3.9 or newer. Set PYTHON=/absolute/path/to/python3."
   exit 1
 fi
 
@@ -44,7 +44,7 @@ fi
 
 .venv/bin/market-radar bootstrap
 echo ""
-echo "Market Radar is starting at http://127.0.0.1:${RADAR_PORT}"
+echo "FolioShift is starting at http://127.0.0.1:${RADAR_PORT}"
 echo "Keep this terminal window open while presenting the dashboard."
 echo ""
 .venv/bin/market-radar serve --port "$RADAR_PORT"

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "market-radar"
 version = "0.1.0"
-description = "A transparent after-close stock and options evidence dashboard."
+description = "FolioShift: personal portfolio intelligence after the close."
 requires-python = ">=3.9"
 dependencies = [
   "alpaca-py>=0.42,<1",
@@ -22,6 +22,7 @@ dev = ["pytest>=8,<9", "ruff>=0.9,<1"]
 
 [project.scripts]
 market-radar = "market_radar.cli:main"
+folioshift = "market_radar.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["market_radar*"]

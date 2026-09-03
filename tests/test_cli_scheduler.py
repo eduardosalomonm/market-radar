@@ -77,6 +77,24 @@ class CliSchedulerTest(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(repository.latest_scan().as_of, date(2026, 8, 27))
 
+    def test_scheduler_resolves_a_fresh_followed_universe_at_scan_time(self):
+        repository = Repository(self.database)
+        calls = []
+
+        def universe_loader():
+            calls.append(True)
+            return load_universe(self.universe_path, [])
+
+        result = scheduler_tick(
+            DemoProvider(),
+            repository,
+            universe_loader,
+            datetime(2026, 8, 28, 17, 30, tzinfo=ZoneInfo("America/New_York")),
+        )
+
+        self.assertIsNotNone(result)
+        self.assertEqual(calls, [True])
+
     def test_serve_uses_the_documented_port_and_project_streamlit_config(self):
         with patch("market_radar.cli.subprocess.call", return_value=0) as call:
             exit_code = main(

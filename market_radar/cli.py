@@ -63,7 +63,7 @@ def _live_provider(repository=None):
 
 def _context(args):
     repository = Repository(args.database)
-    universe = load_universe(args.universe, repository.list_watchlist())
+    universe = load_universe(args.universe, repository.list_followed_members())
     return repository, universe
 
 
@@ -86,7 +86,10 @@ def main(argv=None):
         )
         return 0
     if args.command == "scheduler":
-        run_scheduler(_live_provider(repository), repository, universe, interval_seconds=args.interval)
+        def universe_loader():
+            return load_universe(args.universe, repository.list_followed_members())
+
+        run_scheduler(_live_provider(repository), repository, universe_loader, interval_seconds=args.interval)
         return 0
     if args.command == "bootstrap":
         existing = repository.latest_scan()

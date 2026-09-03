@@ -4,7 +4,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 
-from .models import IdeaOutcome, ScanResult, SymbolSignal, TradeIdea, UniverseMember
+from .models import IdeaOutcome, PortfolioPosition, ScanResult, SymbolSignal, TradeIdea, UniverseMember
 
 
 class Repository:
@@ -65,6 +65,18 @@ class Repository:
                     sector TEXT NOT NULL,
                     sector_etf TEXT NOT NULL,
                     industry TEXT NOT NULL DEFAULT 'Unclassified'
+                );
+                CREATE TABLE IF NOT EXISTS portfolio_positions (
+                    ticker TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    sector TEXT NOT NULL,
+                    sector_etf TEXT NOT NULL,
+                    industry TEXT NOT NULL DEFAULT 'Unclassified',
+                    shares REAL NOT NULL CHECK(shares > 0),
+                    average_cost REAL,
+                    thesis TEXT NOT NULL DEFAULT '',
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
                 );
                 CREATE TABLE IF NOT EXISTS raw_cache (
                     cache_key TEXT PRIMARY KEY,
@@ -232,6 +244,73 @@ class Repository:
             )
             for row in rows
         ]
+
+    def upsert_position(self, position: PortfolioPosition) -> None:
+        if position.shares <= 0:
+            raise ValueError("Position shares must be positive")
+        if position.average_cost is not None and position.average_cost < 0:
+            raise ValueError("Average cost cannot be negative")
+        now = datetime.utcnow()
+        created_at = position.created_at or now
+        updated_at = position.updated_at or now
+        with self._connect() as db:
+            db.execute(
+                """
+                INSERT INTO portfolio_positions (
+                    ticker, name, sector, sector_etf, industry, shares, average_cost, thesis, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(ticker) DO UPDATE SET
+                    name=excluded.name,
+                    sector=excluded.sector,
+                    sector_etf=excluded.sector_etf,
+                    industry=excluded.industry,
+                    shares=excluded.shares,
+                    average_cost=excluded.average_cost,
+                    thesis=excluded.thesis,
+                    updated_at=excluded.updated_at
+                """,
+                (
+                    position.ticker.upper(),
+                    position.name,
+                    position.sector,
+                    position.sector_etf,
+                    position.industry,
+                    position.shares,
+                    position.average_cost,
+                    position.thesis,
+                    created_at.isoformat(),
+                    updated_at.isoformat(),
+                ),
+            )
+
+    def remove_position(self, ticker: str) -> None:
+        with self._connect() as db:
+            db.execute("DELETE FROM portfolio_positions WHERE ticker = ?", (ticker.upper(),))
+
+    def list_positions(self) -> list[PortfolioPosition]:
+        with self._connect() as db:
+            rows = db.execute("SELECT * FROM portfolio_positions ORDER BY ticker").fetchall()
+        return [
+            PortfolioPosition(
+                ticker=row["ticker"],
+                name=row["name"],
+                sector=row["sector"],
+                sector_etf=row["sector_etf"],
+                shares=float(row["shares"]),
+                average_cost=float(row["average_cost"]) if row["average_cost"] is not None else None,
+                industry=row["industry"],
+                thesis=row["thesis"],
+                created_at=datetime.fromisoformat(row["created_at"]),
+                updated_at=datetime.fromisoformat(row["updated_at"]),
+            )
+            for row in rows
+        ]
+
+    def list_followed_members(self) -> list[UniverseMember]:
+        by_ticker = {member.ticker: member for member in self.list_watchlist()}
+        for position in self.list_positions():
+            by_ticker[position.ticker] = position.to_universe_member()
+        return sorted(by_ticker.values(), key=lambda member: member.ticker)
 
     def save_outcome(self, outcome: IdeaOutcome) -> None:
         if outcome.idea_id is None:

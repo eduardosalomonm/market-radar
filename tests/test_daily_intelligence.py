@@ -6,6 +6,7 @@ from test_pipeline import FakeProvider
 from test_pipeline import PipelineTest as _PipelineFixture
 
 from market_radar.daily_intelligence import build_daily_intelligence
+from market_radar.models import PortfolioPosition
 from market_radar.pipeline import run_scan
 
 
@@ -56,6 +57,25 @@ class DailyIntelligenceTest(unittest.TestCase):
             f"Bearish trend → {self.current.market_regime['label']}",
         )
         self.assertTrue(any(item["ticker"] == "AAA" for item in changes["score_moves"]))
+
+    def test_portfolio_update_values_positions_and_filters_low_noise_alerts(self):
+        position = PortfolioPosition(
+            ticker="AAA",
+            name="Alpha",
+            sector="Technology",
+            sector_etf="XLK",
+            shares=10,
+            average_cost=180,
+        )
+
+        intelligence = build_daily_intelligence(self.current, self.previous, [], [position])
+        portfolio = intelligence["portfolio"]
+
+        self.assertEqual(portfolio["position_count"], 1)
+        self.assertAlmostEqual(portfolio["market_value"], self.current.signals[0].close * 10)
+        self.assertAlmostEqual(portfolio["daily_pnl"], (self.current.signals[0].close - 190) * 10)
+        self.assertEqual(intelligence["alerts"][0]["ticker"], "AAA")
+        self.assertIn("setup changed", intelligence["alerts"][0]["reason"])
 
 
 if __name__ == "__main__":

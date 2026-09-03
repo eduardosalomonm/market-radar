@@ -13,4 +13,4 @@ fi
 
 curl --fail --silent --show-error --max-time 3 "http://127.0.0.1:${RADAR_PORT}/_stcore/health"
 echo ""
-echo "Market Radar is healthy at http://127.0.0.1:${RADAR_PORT}"
+echo "FolioShift is healthy at http://127.0.0.1:${RADAR_PORT}"

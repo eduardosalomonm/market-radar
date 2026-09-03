@@ -58,9 +58,9 @@ class DashboardTest(unittest.TestCase):
         app = AppTest.from_file(str(app_path), default_timeout=10).run()
 
         self.assertEqual(app.exception, [])
-        self.assertEqual(app.title[0].value, "Market Radar")
+        self.assertEqual(app.title[0].value, "FolioShift")
         navigation = next(item for item in app.radio if item.label == "Sections")
-        self.assertIn("Overview", navigation.options)
+        self.assertIn("Daily Brief", navigation.options)
         self.assertIn("Global Economy", navigation.options)
         self.assertIn("Trade Ideas", navigation.options)
         self.assertIn("Paper Results", navigation.options)
@@ -92,9 +92,9 @@ class DashboardTest(unittest.TestCase):
         popover = app.get("popover")[0]
         self.assertEqual(popover.proto.popover.label, "Menu")
         navigation = next(item for item in app.radio if item.label == "Sections")
-        self.assertIn("Overview", navigation.options)
+        self.assertIn("Daily Brief", navigation.options)
         self.assertIn("Stock Explorer", navigation.options)
-        self.assertIn("Watchlist", navigation.options)
+        self.assertIn("My Portfolio", navigation.options)
 
         navigation.set_value("5 · Stock Explorer").run()
 
@@ -145,6 +145,24 @@ class DashboardTest(unittest.TestCase):
         results = next(item for item in app.radio if item.label == "Search results")
         self.assertEqual(results.options, ["Nu Holdings Ltd. — NU · NYSE"])
 
+    def test_portfolio_can_search_and_save_a_holding(self):
+        app_path = Path(__file__).parents[1] / "market_radar" / "dashboard.py"
+        app = AppTest.from_file(str(app_path), default_timeout=10).run()
+
+        next(item for item in app.radio if item.label == "Sections").set_value("6 · Watchlist").run()
+        next(item for item in app.text_input if item.label == "Find a portfolio company").set_value("Palantir")
+        next(item for item in app.button if item.label == "Search portfolio companies").click().run()
+
+        results = next(item for item in app.radio if item.label == "Portfolio search results")
+        self.assertEqual(results.options, ["Palantir Technologies — PLTR · NASDAQ"])
+        next(item for item in app.number_input if item.label == "Shares").set_value(15.0)
+        next(item for item in app.number_input if item.label == "Average cost per share (optional)").set_value(70.0)
+        next(item for item in app.button if item.label == "Save holding").click().run()
+
+        saved = Repository(self.database).list_positions()
+        self.assertEqual(saved[0].ticker, "PLTR")
+        self.assertEqual(saved[0].shares, 15.0)
+
     def test_stock_explorer_shows_the_latest_saved_price_prominently(self):
         app_path = Path(__file__).parents[1] / "market_radar" / "dashboard.py"
         app = AppTest.from_file(str(app_path), default_timeout=10).run()
@@ -187,8 +205,8 @@ class DashboardTest(unittest.TestCase):
         self.assertNotIn("Run live Alpaca scan", sidebar_buttons)
 
         next(item for item in app.radio if item.label == "Sections").set_value("6 · Watchlist").run()
-        next(item for item in app.text_input if item.label == "Find a company").set_value("Nu Bank")
-        next(item for item in app.button if item.label == "Search").click().run()
+        next(item for item in app.text_input if item.label == "Find a portfolio company").set_value("Palantir")
+        next(item for item in app.button if item.label == "Search portfolio companies").click().run()
 
         read_only = next(item for item in app.button if item.label == "Public demo · read only")
         self.assertTrue(read_only.disabled)

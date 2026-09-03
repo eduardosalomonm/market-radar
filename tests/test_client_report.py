@@ -19,7 +19,7 @@ class ClientReportTest(unittest.TestCase):
 
         self.assertTrue(report.startswith(b"%PDF"))
         self.assertGreater(len(report), 3_000)
-        self.assertIn(b"Market Radar Client Brief", report)
+        self.assertIn(b"FolioShift Client Brief", report)
 
 
 if __name__ == "__main__":

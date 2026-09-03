@@ -16,7 +16,7 @@ from market_radar.cli import DEFAULT_DATABASE, DEFAULT_UNIVERSE, PROJECT_ROOT, _
 from market_radar.client_report import build_client_brief_pdf
 from market_radar.daily_intelligence import build_daily_intelligence
 from market_radar.exports import export_outcomes_json
-from market_radar.models import UniverseMember
+from market_radar.models import PortfolioPosition, UniverseMember
 from market_radar.pipeline import run_scan
 from market_radar.presentation import (
     QUADRANT_EXPLANATIONS,
@@ -69,43 +69,43 @@ PAGES = [
     "Method & Data",
 ]
 PAGE_DESCRIPTIONS = {
-    "1 · Executive Brief": "Today's market story, risk posture and highest-conviction conditional setups.",
+    "1 · Executive Brief": "What changed, what matters to your holdings, and the few items worth attention.",
     "2 · Global Macro": "How equities, rates, credit, the dollar and commodities fit together.",
     "3 · Opportunity Map": "Where price strength and options positioning agree—or diverge.",
     "4 · Trade Ideas": "Ranked setups with a plain-English thesis, trigger, risk and targets.",
     "5 · Stock Explorer": "A focused company view with current saved price, trend and relative strength.",
-    "6 · Watchlist": "Find a company by name or ticker and keep the names you care about together.",
+    "6 · Watchlist": "Track your holdings and watchlist, with a personalized after-close update.",
     "7 · Paper Results": "Forward outcomes from frozen ideas; never rewritten with hindsight.",
     "Method & Data": "Formulas, data health, limitations and the audit trail behind every score.",
 }
 PAGE_LABELS = {
-    "1 · Executive Brief": "Overview",
+    "1 · Executive Brief": "Daily Brief",
     "2 · Global Macro": "Global Economy",
     "3 · Opportunity Map": "Market Map",
     "4 · Trade Ideas": "Trade Ideas",
     "5 · Stock Explorer": "Stock Explorer",
-    "6 · Watchlist": "Watchlist",
+    "6 · Watchlist": "My Portfolio",
     "7 · Paper Results": "Paper Results",
     "Method & Data": "Method & Data",
 }
 
-st.set_page_config(page_title="Market Radar", page_icon="◉", layout="wide")
+st.set_page_config(page_title="FolioShift", page_icon="◒", layout="wide")
 st.markdown(
     """
     <style>
-    .stApp {background: radial-gradient(circle at 20% -10%, #17223a 0%, #0b101b 38%, #070b12 100%);}
+    .stApp {background: radial-gradient(circle at 18% -8%, #16283a 0%, #0b111b 40%, #070b11 100%);}
     [data-testid="stMetric"] {background: rgba(20,30,48,.76); border: 1px solid #26354f; border-radius: 14px; padding: 14px;}
     [data-testid="stSidebar"] {background: #090e18; border-right: 1px solid #22304a;}
-    .radar-kicker {letter-spacing:.16em; text-transform:uppercase; color:#72a7ff; font-size:.75rem; font-weight:700;}
+    .radar-kicker {letter-spacing:.16em; text-transform:uppercase; color:#78f0c4; font-size:.75rem; font-weight:700;}
     .radar-card {background:rgba(16,24,39,.8);border:1px solid #26354f;border-radius:14px;padding:18px;margin:.5rem 0 1rem;}
     .radar-muted {color:#94a3b8;}
-    .radar-eyebrow {color:#7da8ee;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+    .radar-eyebrow {color:#78f0c4;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
     .radar-reason {font-size:1.02rem;line-height:1.55;color:#dbe7f7;margin:.45rem 0 .2rem;}
     .radar-pill {display:inline-block;background:#17243a;border:1px solid #314561;border-radius:999px;padding:3px 9px;margin:2px 4px 2px 0;color:#b9c9df;font-size:.76rem;}
-    .radar-hero {background:linear-gradient(135deg,rgba(34,68,115,.88),rgba(18,29,48,.92));border:1px solid #38537a;border-radius:18px;padding:24px 26px;margin:.4rem 0 1.2rem;box-shadow:0 18px 50px rgba(0,0,0,.2);}
+    .radar-hero {background:linear-gradient(135deg,rgba(24,70,77,.9),rgba(18,29,48,.94));border:1px solid #2d6c68;border-radius:18px;padding:24px 26px;margin:.4rem 0 1.2rem;box-shadow:0 18px 50px rgba(0,0,0,.2);}
     .radar-hero h2 {font-size:1.65rem;margin:.25rem 0 .5rem;color:#f3f7ff;}
     .radar-hero p {font-size:1.02rem;line-height:1.55;color:#c9d7ec;margin:0;}
-    .radar-status {display:inline-block;border-radius:999px;background:#15283e;border:1px solid #35577d;padding:4px 10px;color:#9fc5ff;font-size:.72rem;font-weight:700;letter-spacing:.08em;}
+    .radar-status {display:inline-block;border-radius:999px;background:#132c2c;border:1px solid #2d6c68;padding:4px 10px;color:#8ff4d0;font-size:.72rem;font-weight:700;letter-spacing:.08em;}
     .radar-section-note {color:#a9b7ca;font-size:.92rem;line-height:1.55;}
     .radar-nav-spacer {height:.5rem;}
     div[data-testid="stAlert"] {border-radius:12px;}
@@ -144,7 +144,7 @@ _load_env(PROJECT_ROOT / ".env")
 
 
 def universe():
-    return load_universe(UNIVERSE_PATH, repo.list_watchlist())
+    return load_universe(UNIVERSE_PATH, repo.list_followed_members())
 
 
 @st.cache_data
@@ -160,10 +160,6 @@ def company_catalog():
 @st.cache_resource
 def bootstrap_public_demo():
     """Create one safe, deterministic snapshot for ephemeral public hosting."""
-    existing = repo.latest_scan()
-    if existing:
-        return existing.id
-
     catalog_by_ticker = {entry.ticker: entry for entry in company_catalog()}
     for ticker in ("PLTR", "NU"):
         entry = catalog_by_ticker.get(ticker)
@@ -179,8 +175,37 @@ def bootstrap_public_demo():
                 )
             )
 
+    if not repo.list_positions():
+        demo_positions = {
+            "PLTR": (18.0, 72.0, "AI platform adoption and durable government demand"),
+            "NU": (60.0, 12.5, "Latin American digital banking growth"),
+        }
+        for ticker, (shares, average_cost, thesis) in demo_positions.items():
+            entry = catalog_by_ticker.get(ticker)
+            if entry:
+                repo.upsert_position(
+                    PortfolioPosition(
+                        ticker=entry.ticker,
+                        name=entry.name,
+                        sector=entry.sector,
+                        sector_etf=entry.sector_etf,
+                        industry=entry.industry,
+                        shares=shares,
+                        average_cost=average_cost,
+                        thesis=thesis,
+                    )
+                )
+
+    existing = repo.latest_scan()
+    if existing:
+        return existing.id
+
     provider = DemoProvider()
     session = provider.latest_completed_session(datetime.now(NEW_YORK))
+    previous_session = session - timedelta(days=1)
+    while previous_session.weekday() >= 5:
+        previous_session -= timedelta(days=1)
+    repo.save_scan(run_scan(provider, universe(), previous_session, scan_type="public-demo"))
     result = run_scan(provider, universe(), session, scan_type="public-demo")
     return repo.save_scan(result)
 
@@ -196,7 +221,8 @@ def save_scan(provider, label):
 
 
 st.sidebar.markdown('<div class="radar-kicker">Data & settings</div>', unsafe_allow_html=True)
-st.sidebar.title("Market Radar")
+st.sidebar.title("FolioShift")
+st.sidebar.caption("Personal portfolio intelligence")
 professional_detail = st.sidebar.toggle(
     "Professional detail",
     value=False,
@@ -221,8 +247,8 @@ if PUBLIC_DEMO:
 
 scan_rows = repo.list_scans()
 if not scan_rows:
-    st.title("Market Radar")
-    st.caption("Price × options evidence for after-close swing research.")
+    st.title("FolioShift")
+    st.caption("What changed. What matters.")
     st.info(
         "No saved scan yet. Choose **Run demo scan** to generate a deterministic local example without credentials."
     )
@@ -245,16 +271,20 @@ enriched = [signal for signal in scan.signals if signal.options_axis is not None
 ranked_signals = sorted(enriched, key=lambda signal: signal.evidence_score or 0, reverse=True)
 universe_lookup = {member.ticker: member for member in universe()}
 watchlist_entries = repo.list_watchlist()
+portfolio_positions = repo.list_positions()
 daily_intelligence = build_daily_intelligence(
     scan,
     previous_scan,
     [item.ticker for item in watchlist_entries],
+    portfolio_positions,
 )
 upcoming_catalysts = load_catalysts(
     CATALYSTS_PATH,
     scan.as_of,
     days=35,
-    tickers={item.ticker for item in scan.ideas} | {item.ticker for item in watchlist_entries},
+    tickers={item.ticker for item in scan.ideas}
+    | {item.ticker for item in watchlist_entries}
+    | {item.ticker for item in portfolio_positions},
 )
 macro = scan.market_regime.get("global_macro", {})
 outlook = load_global_outlook()
@@ -280,8 +310,8 @@ def compact_dollars(value: float) -> str:
 
 
 st.markdown('<div class="radar-nav-spacer" aria-hidden="true"></div>', unsafe_allow_html=True)
-st.title("Market Radar")
-st.caption("Global market context × stock selection × options evidence. Research only—no broker execution.")
+st.title("FolioShift")
+st.caption("What changed. What matters. · Personal portfolio intelligence after the close.")
 with st.popover("Menu", use_container_width=True):
     view = st.radio(
         "Sections",
@@ -613,6 +643,46 @@ def render_daily_changes():
             st.dataframe(pd.DataFrame(changes["score_moves"]), hide_index=True, width="stretch")
 
 
+def render_personal_update(compact: bool = False):
+    portfolio = daily_intelligence["portfolio"]
+    alerts = daily_intelligence["alerts"]
+    if not portfolio["position_count"]:
+        st.info("Add holdings in My Portfolio to turn this market brief into your personal after-close update.")
+        return
+
+    metrics = st.columns(4)
+    metrics[0].metric(
+        "Portfolio value",
+        f"${portfolio['market_value']:,.0f}" if portfolio["market_value"] is not None else "Awaiting scan",
+        help="Saved closing prices × shares. This is not an intraday brokerage balance.",
+    )
+    metrics[1].metric(
+        "Session P&L",
+        f"${portfolio['daily_pnl']:+,.0f}" if portfolio["daily_pnl"] is not None else "Need 2 scans",
+        delta=f"{portfolio['daily_return']:+.2%}" if portfolio["daily_return"] is not None else None,
+    )
+    metrics[2].metric(
+        "Unrealized P&L",
+        f"${portfolio['unrealized_pnl']:+,.0f}" if portfolio["unrealized_pnl"] is not None else "Add cost basis",
+        help="Uses the optional average cost you entered; it does not include fees or taxes.",
+    )
+    metrics[3].metric("Material changes", len(alerts), help=daily_intelligence["alert_policy"])
+
+    if alerts:
+        st.markdown("**Worth your attention**")
+        for alert in alerts[: 3 if compact else None]:
+            icon = "●" if alert["severity"] == "high" else "○"
+            st.write(f"{icon} **{alert['ticker']} · {alert['name']}** — {alert['reason']}.")
+    else:
+        st.success("No material followed-name change today. Quiet is a valid result; no action is suggested.")
+    st.caption(daily_intelligence["alert_policy"])
+
+    if not compact and portfolio["macro_notes"]:
+        st.markdown("**How today's backdrop connects to your holdings**")
+        for note in portfolio["macro_notes"]:
+            st.write(f"• {note}")
+
+
 def render_catalyst_rail(limit: int = 6):
     if not upcoming_catalysts:
         st.info("No verified catalyst is configured in the next 35 days.")
@@ -668,10 +738,10 @@ if view == "1 · Executive Brief":
     st.markdown(
         f"""
         <div class="radar-hero">
-          <div class="radar-eyebrow">Today's investment posture</div>
+          <div class="radar-eyebrow">Your after-close signal</div>
           <h2>{brief["posture"]}</h2>
-          <p>The broad-market trend, global cross-asset signals and stock-level evidence are shown together so clients
-          can see both the opportunity and the conditions that could invalidate it.</p>
+          <p>FolioShift filters the market down to the changes that affect your holdings and watchlist, then shows the
+          evidence, the risk and what would invalidate the idea.</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -692,10 +762,13 @@ if view == "1 · Executive Brief":
     st.download_button(
         "Download client brief PDF",
         data=client_pdf,
-        file_name=f"market-radar-client-brief-{scan.as_of.isoformat()}.pdf",
+        file_name=f"folioshift-client-brief-{scan.as_of.isoformat()}.pdf",
         mime="application/pdf",
         help="A dated executive brief built only from saved deterministic evidence and verified catalyst dates.",
     )
+
+    st.subheader("Your portfolio today")
+    render_personal_update(compact=True)
 
     story, risk = st.columns([1.35, 0.65])
     with story:
@@ -991,7 +1064,7 @@ elif view == "4 · Trade Ideas":
     st.download_button(
         "Download ideas CSV",
         frame.to_csv(index=False),
-        file_name=f"market-radar-ideas-{scan.as_of.isoformat()}.csv",
+        file_name=f"folioshift-ideas-{scan.as_of.isoformat()}.csv",
         mime="text/csv",
     )
 
@@ -1012,6 +1085,10 @@ elif view == "5 · Stock Explorer":
             watchlist_signal = all_signal_lookup.get(item.ticker)
             if watchlist_signal and watchlist_signal not in most_traded:
                 most_traded.append(watchlist_signal)
+        for item in portfolio_positions:
+            portfolio_signal = all_signal_lookup.get(item.ticker)
+            if portfolio_signal and portfolio_signal not in most_traded:
+                most_traded.append(portfolio_signal)
 
         selector, finder, search_action = st.columns([0.30, 0.50, 0.20])
         explorer_mode = selector.selectbox(
@@ -1249,7 +1326,143 @@ elif view == "5 · Stock Explorer":
                     st.warning(warning)
 
 elif view == "6 · Watchlist":
-    st.subheader("Company watchlist")
+    st.subheader("My Portfolio")
+    if PUBLIC_DEMO:
+        st.caption(
+            "A sample portfolio demonstrates the personalized update. Holdings are fictional, read-only and never sent "
+            "to a broker. Your private local edition stores them only in its SQLite database."
+        )
+    else:
+        st.caption(
+            "Add shares and an optional average cost. FolioShift uses completed-session prices to explain daily changes; "
+            "it never connects to order entry."
+        )
+
+    render_personal_update()
+    with st.expander("How the daily update works"):
+        st.markdown(
+            "1. Add a holding or watchlist company.\n"
+            "2. The private scheduler runs after 17:15 America/New_York on completed trading days.\n"
+            "3. FolioShift saves the new closing-price, options and macro evidence, compares it with the prior scan, "
+            "and surfaces only material changes.\n"
+            "4. Every published trade idea stays frozen and is evaluated against later daily bars."
+        )
+        if PUBLIC_DEMO:
+            st.info("This hosted showcase uses synthetic data. Use the private edition with Alpaca credentials for fresh after-close data.")
+        elif os.getenv("ALPACA_API_KEY_ID") and os.getenv("ALPACA_API_SECRET_KEY"):
+            st.success("Live after-close data is configured. Keep the FolioShift service running for automatic updates.")
+        else:
+            st.warning("Automatic market updates are off. Add Alpaca credentials to `.env`, then restart `./start.sh`.")
+    portfolio = daily_intelligence["portfolio"]
+    if portfolio["positions"]:
+        st.markdown("#### Holdings")
+        holding_rows = []
+        for row in portfolio["positions"]:
+            holding_rows.append(
+                {
+                    "Ticker": row["ticker"],
+                    "Company": row["name"],
+                    "Shares": row["shares"],
+                    "Saved close": f"${row['current_price']:,.2f}" if row["current_price"] is not None else "Pending",
+                    "Market value": f"${row['market_value']:,.0f}" if row["market_value"] is not None else "Pending",
+                    "Session": f"{row['session_return']:+.2%}" if row["session_return"] is not None else "—",
+                    "Unrealized": f"${row['unrealized_pnl']:+,.0f}" if row["unrealized_pnl"] is not None else "—",
+                    "Setup": row["quadrant"] or "Price only",
+                    "Evidence": f"{row['evidence']:.1f}" if row["evidence"] is not None else "—",
+                }
+            )
+        st.dataframe(pd.DataFrame(holding_rows), hide_index=True, width="stretch")
+        if portfolio["sector_exposure"]:
+            exposure = pd.DataFrame(portfolio["sector_exposure"])
+            exposure["Weight"] = exposure["weight"].map(lambda value: f"{value:.1%}")
+            exposure["Value"] = exposure["market_value"].map(lambda value: f"${value:,.0f}")
+            with st.expander("Portfolio concentration"):
+                st.dataframe(
+                    exposure[["sector", "Weight", "Value"]].rename(columns={"sector": "Sector"}),
+                    hide_index=True,
+                    width="stretch",
+                )
+
+    st.markdown("#### Add or update a holding")
+    catalog_entries = company_catalog()
+    position_tickers = {position.ticker for position in portfolio_positions}
+    with st.form("portfolio_company_search", clear_on_submit=False, border=False):
+        position_query = st.text_input(
+            "Find a portfolio company",
+            placeholder="Try Palantir, PLTR, Nu Bank, or NU",
+        )
+        st.form_submit_button("Search portfolio companies", type="primary", width="stretch")
+    position_matches = search_company_catalog(catalog_entries, position_query, limit=8)
+    selected_position_company = None
+    if position_query.strip() and not position_matches:
+        st.info(f'No company matched “{position_query.strip()}”. Try a ticker or shorter name.')
+    elif position_matches:
+        position_results = {
+            f"{entry.name} — {entry.ticker} · {entry.exchange}": entry for entry in position_matches
+        }
+        selected_position_label = st.radio("Portfolio search results", list(position_results), index=0)
+        selected_position_company = position_results[selected_position_label]
+
+    if selected_position_company:
+        existing_position = next(
+            (item for item in portfolio_positions if item.ticker == selected_position_company.ticker),
+            None,
+        )
+        with st.form("portfolio_position_editor", border=True):
+            st.markdown(f"**{selected_position_company.name} ({selected_position_company.ticker})**")
+            shares_column, cost_column = st.columns(2)
+            shares = shares_column.number_input(
+                "Shares",
+                min_value=0.0001,
+                value=float(existing_position.shares) if existing_position else 1.0,
+                step=1.0,
+            )
+            average_cost = cost_column.number_input(
+                "Average cost per share (optional)",
+                min_value=0.0,
+                value=float(existing_position.average_cost or 0.0) if existing_position else 0.0,
+                step=1.0,
+            )
+            thesis = st.text_input(
+                "Why do you own it? (optional)",
+                value=existing_position.thesis if existing_position else "",
+                placeholder="One sentence investment thesis",
+            )
+            if st.form_submit_button(
+                "Public demo · read only" if PUBLIC_DEMO else "Save holding",
+                type="primary",
+                width="stretch",
+                disabled=PUBLIC_DEMO,
+            ):
+                repo.upsert_position(
+                    PortfolioPosition(
+                        ticker=selected_position_company.ticker,
+                        name=selected_position_company.name,
+                        sector=selected_position_company.sector,
+                        sector_etf=selected_position_company.sector_etf,
+                        industry=selected_position_company.industry,
+                        shares=shares,
+                        average_cost=average_cost or None,
+                        thesis=thesis,
+                        created_at=existing_position.created_at if existing_position else None,
+                    )
+                )
+                st.success(f"Saved {selected_position_company.name} in your portfolio.")
+                st.rerun()
+
+    if portfolio_positions and not PUBLIC_DEMO:
+        position_lookup = {item.ticker: item for item in portfolio_positions}
+        remove_position_ticker = st.selectbox(
+            "Remove a holding",
+            list(position_lookup),
+            format_func=lambda symbol: f"{position_lookup[symbol].name} — {symbol}",
+        )
+        if st.button("Remove holding"):
+            repo.remove_position(remove_position_ticker)
+            st.rerun()
+
+    st.divider()
+    st.subheader("Watchlist")
     if PUBLIC_DEMO:
         st.caption(
             "This public showcase uses a curated, read-only watchlist. Search still demonstrates company discovery; "
@@ -1317,7 +1530,6 @@ elif view == "6 · Watchlist":
     else:
         st.info("Your watchlist is empty. Search for a company below to add the first one.")
 
-    catalog_entries = company_catalog()
     available_companies = [entry for entry in catalog_entries if entry.ticker not in watchlist_tickers]
     st.markdown("#### Add a company")
     st.caption("Type a company name or ticker, then press **Search**. Results are ranked by best match.")
@@ -1424,7 +1636,7 @@ elif view == "7 · Paper Results":
     st.download_button(
         "Download outcomes JSON",
         export_outcomes_json(outcomes),
-        file_name="market-radar-outcomes.json",
+        file_name="folioshift-outcomes.json",
         mime="application/json",
     )
 
@@ -1522,6 +1734,6 @@ else:
     st.download_button(
         "Download selected scan JSON",
         json.dumps(scan.to_dict(), indent=2, sort_keys=True),
-        file_name=f"market-radar-scan-{scan.id}.json",
+        file_name=f"folioshift-scan-{scan.id}.json",
         mime="application/json",
     )

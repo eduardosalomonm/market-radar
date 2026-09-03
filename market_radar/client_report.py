@@ -42,8 +42,8 @@ def build_client_brief_pdf(scan: ScanResult, intelligence: dict[str, object], ca
         rightMargin=13 * mm,
         topMargin=12 * mm,
         bottomMargin=12 * mm,
-        title=f"Market Radar Client Brief - {scan.as_of.isoformat()}",
-        author="Market Radar",
+        title=f"FolioShift Client Brief - {scan.as_of.isoformat()}",
+        author="FolioShift",
     )
     styles = getSampleStyleSheet()
     title = ParagraphStyle(
@@ -90,7 +90,7 @@ def build_client_brief_pdf(scan: ScanResult, intelligence: dict[str, object], ca
     brief = executive_brief(scan)
     signal_by_ticker = {signal.ticker: signal for signal in scan.signals}
     story = [
-        Paragraph("MARKET RADAR", title),
+        Paragraph("FOLIOSHIFT", title),
         Paragraph(
             f"After-close client brief | Session {scan.as_of.isoformat()} | {scan.provider.title()} data | "
             "Conditional research only",

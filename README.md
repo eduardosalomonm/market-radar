@@ -1,8 +1,10 @@
-# Market Radar
+# FolioShift
+
+**What changed. What matters.** Personal portfolio intelligence after the close.
 
 **Public showcase:** [market-radar-insights.streamlit.app](https://market-radar-insights.streamlit.app/)
 
-Market Radar is a personal, local after-close dashboard for transparent swing-trading research. It scans a dated S&P 500 universe plus the eleven Select Sector SPDR ETFs, compares price movement with an approximation of options pressure, places enriched names into four market-behavior quadrants, and forward-tracks frozen conditional ideas.
+FolioShift turns a portfolio and watchlist into a low-noise daily update. It scans a dated S&P 500 universe plus the eleven Select Sector SPDR ETFs, compares price movement with an approximation of options pressure, connects the global market backdrop to the user's exposures, and forward-tracks every frozen conditional idea.
 
 It never connects to a brokerage, sends an order, or sizes a position. The evidence score is a reproducible ranking heuristic—not a probability, return forecast, or financial recommendation.
 
@@ -32,12 +34,14 @@ To run the deterministic workflow before opening the dashboard:
 .venv/bin/market-radar serve
 ```
 
-Saved scans, ideas, outcomes, and watchlist entries are stored in `data/market_radar.db`.
+`folioshift` is also installed as a friendlier command name; `market-radar` remains available for compatibility.
+
+Saved scans, ideas, outcomes, holdings, and watchlist entries are stored in `data/market_radar.db`.
 
 The company search is broader than the nightly base scan. It merges the dated S&P 500 seed with a local catalog of
 roughly 6,000 Nasdaq-, NYSE-, NYSE American-, Arca-, Cboe-, and IEX-listed operating-company securities. Search by
 official name, familiar alias, or ticker; for example, `Palantir`, `PLTR`, `Nu Bank`, `Nubank`, and `NU` all resolve.
-Adding a company to the watchlist includes it in the next price scan and prioritizes it for options enrichment.
+Adding a company to the portfolio or watchlist includes it in the next price scan and prioritizes it for options enrichment. Portfolio shares and average cost are entered manually; FolioShift does not request brokerage access.
 
 ## Live Alpaca setup
 
@@ -56,7 +60,9 @@ Then run:
 
 Or restart `./start.sh`. With credentials present, the launcher also starts the after-close scheduler. It checks every fifteen minutes, identifies the latest completed SPY session from Alpaca, saves at most one scheduled scan per session, and catches up the most recent missed session after restart.
 
-Alpaca's free `indicative` options feed is delayed and uses modified quotes. Its chain snapshot supplies the latest trade, quote, and Greeks for each contract. Market Radar therefore labels options pressure as an approximation rather than full options flow. See the [official Alpaca option-chain documentation](https://docs.alpaca.markets/us/reference/optionchain).
+Alpaca's free `indicative` options feed is delayed and uses modified quotes. Its chain snapshot supplies the latest trade, quote, and Greeks for each contract. FolioShift therefore labels options pressure as an approximation rather than full options flow. See the [official Alpaca option-chain documentation](https://docs.alpaca.markets/us/reference/optionchain).
+
+“Live” in this version means a fresh completed-session scan after the U.S. close, not streaming quotes. Keep `start.sh` running: at 17:15 America/New_York the scheduler discovers the latest completed session, catches up a missed session after restart, and refreshes the followed universe before every scan so newly added holdings are included. The current price shown is always the saved close and is dated in the interface.
 
 ## Commands
 
@@ -73,7 +79,7 @@ Every command accepts `--database /path/to/file.db` and `--universe /path/to/uni
 ## What the scanner calculates
 
 ```text
-S&P 500 + sector ETFs + watchlist
+S&P 500 + sector ETFs + portfolio + watchlist
 → 260+ completed daily bars
 → cross-asset world lens: U.S. / developed / emerging equities, credit, rates, dollar, gold, oil, commodities
 → 5-day sector-relative and 20-day SPY-relative performance
@@ -91,7 +97,7 @@ S&P 500 + sector ETFs + watchlist
 
 The default dashboard is designed for financially literate non-specialists:
 
-- **Executive Brief** connects the broad-market trend, world backdrop, key risks, and the three strongest conditional ideas.
+- **Daily Brief** leads with portfolio value, daily P&L, and only the followed-name changes that crossed a materiality threshold.
 - **What Changed** compares the selected scan with the last earlier completed session: new and removed ideas, setup changes, meaningful evidence moves, regime, and sector leadership.
 - **Global Macro** explains daily market-implied risk appetite, growth, inflation, and dollar signals across nine liquid proxies.
 - **Opportunity Map** adds a sector-grouped market-driver heatmap before the price-versus-options scatterplot.
@@ -101,7 +107,7 @@ The default dashboard is designed for financially literate non-specialists:
   Each stock has a six-KPI summary, a six-month price/EMA/volume chart, a three-month comparison against its sector ETF
   and SPY, and a plain-language trend/participation reading. Formula-level evidence stays collapsed unless
   **Professional detail** is enabled.
-- **Watchlist Daily Pulse** shows latest saved price, session change, evidence change, setup, and scan status.
+- **My Portfolio** stores shares, optional average cost and a one-line thesis; it shows P&L, concentration, market context, and the watchlist Daily Pulse.
 - **Catalyst Rail** places source-linked official releases beside the market story and affected ideas.
 - **Client Brief PDF** downloads a dated one-page summary built only from the selected saved scan.
 - **Method & Data** shows feed identity, limitations, formula definitions, and immutable scan history.
@@ -160,14 +166,14 @@ Set `OPENAI_API_KEY` to enable the dashboard's optional prose brief. The impleme
 ### Free public showcase
 
 `streamlit_app.py` is a deployment-safe entry point for Streamlit Community Cloud. It automatically creates a
-deterministic demo snapshot on ephemeral storage, seeds a curated Palantir/Nu Holdings watchlist, hides scan controls,
-and prevents public visitors from changing the shared watchlist. No credentials are required.
+deterministic demo snapshot on ephemeral storage, seeds a fictional Palantir/Nu Holdings portfolio and watchlist, hides scan controls,
+and prevents public visitors from changing shared data. No credentials are required.
 
 1. Push this project to a GitHub repository without `.env` or `data/*.db` files.
 2. In Streamlit Community Cloud, create an app from that repository.
 3. Set the main file path to `streamlit_app.py` and deploy.
 
-The public showcase intentionally contains synthetic data. See
+The public showcase intentionally contains synthetic data and is not a safe place for personal holdings. A real multi-user product needs authentication, a persistent per-user database (for example Postgres), a separate scheduled worker, encrypted secrets, and an email or push provider; Streamlit Community Cloud plus a shared SQLite file is only a showcase. See
 [docs/free-public-hosting.md](docs/free-public-hosting.md) before adding live data or client access.
 
 ### Container deployment

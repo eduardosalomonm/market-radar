@@ -9,7 +9,7 @@ from test_pipeline import FakeProvider
 from test_pipeline import PipelineTest as _PipelineFixture
 
 from market_radar.exports import export_ideas_csv, export_outcomes_json
-from market_radar.models import IdeaOutcome, UniverseMember
+from market_radar.models import IdeaOutcome, PortfolioPosition, UniverseMember
 from market_radar.pipeline import run_scan
 from market_radar.repository import Repository
 
@@ -85,6 +85,29 @@ class RepositoryTest(unittest.TestCase):
 
         self.repository.remove_watchlist("NVDA")
         self.assertEqual(self.repository.list_watchlist(), [])
+
+    def test_portfolio_positions_round_trip_and_join_the_followed_universe(self):
+        position = PortfolioPosition(
+            ticker="PLTR",
+            name="Palantir Technologies",
+            sector="Information Technology",
+            sector_etf="XLK",
+            industry="Application Software",
+            shares=12.5,
+            average_cost=71.2,
+            thesis="Durable AI platform adoption",
+        )
+
+        self.repository.upsert_position(position)
+
+        saved = self.repository.list_positions()[0]
+        self.assertEqual(saved.ticker, "PLTR")
+        self.assertEqual(saved.shares, 12.5)
+        self.assertEqual(saved.average_cost, 71.2)
+        self.assertEqual(self.repository.list_followed_members()[0].ticker, "PLTR")
+
+        self.repository.remove_position("PLTR")
+        self.assertEqual(self.repository.list_positions(), [])
 
     def test_outcome_and_exports_use_saved_public_records(self):
         scan_id = self.repository.save_scan(self.result)

@@ -142,6 +142,30 @@ class UniverseMember:
 
 
 @dataclass(frozen=True)
+class PortfolioPosition:
+    ticker: str
+    name: str
+    sector: str
+    sector_etf: str
+    shares: float
+    average_cost: Optional[float] = None
+    industry: str = "Unclassified"
+    thesis: str = ""
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    def to_universe_member(self) -> UniverseMember:
+        return UniverseMember(
+            ticker=self.ticker,
+            name=self.name,
+            sector=self.sector,
+            sector_etf=self.sector_etf,
+            is_watchlist=True,
+            industry=self.industry,
+        )
+
+
+@dataclass(frozen=True)
 class ScanResult:
     as_of: date
     scan_type: str
