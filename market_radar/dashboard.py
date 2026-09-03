@@ -196,11 +196,16 @@ def bootstrap_public_demo():
                     )
                 )
 
+    provider = DemoProvider()
     existing = repo.latest_scan()
     if existing:
+        if existing.provider == "demo" and repo.previous_scan(existing.id) is None:
+            previous_session = existing.as_of - timedelta(days=1)
+            while previous_session.weekday() >= 5:
+                previous_session -= timedelta(days=1)
+            repo.save_scan(run_scan(provider, universe(), previous_session, scan_type="public-demo"))
         return existing.id
 
-    provider = DemoProvider()
     session = provider.latest_completed_session(datetime.now(NEW_YORK))
     previous_session = session - timedelta(days=1)
     while previous_session.weekday() >= 5:

@@ -69,6 +69,7 @@ class RepositoryTest(unittest.TestCase):
         previous = self.repository.previous_scan(current_id)
 
         self.assertEqual(previous.id, older_id)
+        self.assertEqual(self.repository.latest_scan().id, current_id)
 
     def test_watchlist_is_editable_through_repository_interface(self):
         member = UniverseMember(

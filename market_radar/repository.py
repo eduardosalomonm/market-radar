@@ -187,7 +187,12 @@ class Repository:
     def list_scans(self, limit: int = 50):
         with self._connect() as db:
             rows = db.execute(
-                "SELECT id, as_of, scan_type, status, provider, completed_at FROM scans ORDER BY id DESC LIMIT ?",
+                """
+                SELECT id, as_of, scan_type, status, provider, completed_at
+                FROM scans
+                ORDER BY as_of DESC, id DESC
+                LIMIT ?
+                """,
                 (limit,),
             ).fetchall()
         return [dict(row) for row in rows]
