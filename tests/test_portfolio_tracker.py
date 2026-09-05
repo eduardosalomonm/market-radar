@@ -14,6 +14,24 @@ def holding(**kwargs):
                                      reference_price=100, reference_value_base=800), **kwargs)
 
 
+def test_concentration_and_rebalance_diagnostics():
+    report = portfolio_report([holding(), holding(ticker="BBB", reference_value_base=200)], [], "EUR", max_weight=.5)
+    d = report["diagnostics"]
+    assert d["effective_holdings"] == pytest.approx(1 / (.8 ** 2 + .2 ** 2))
+    assert d["largest_drop_20"] == 160
+    assert d["new_cash_to_limit"] == 600
+    assert d["usd_drop_10"] == 100
+    assert d["over_limit"] == 1
+    assert d["cash_weight"] == 0
+
+
+def test_incomplete_valuation_does_not_offer_rebalance_amounts():
+    report = portfolio_report([holding(), holding(ticker="BBB", reference_price=None, reference_value_base=None)], [], "EUR")
+    assert report["diagnostics"]["new_cash_to_limit"] is None
+    assert report["diagnostics"]["largest_drop_20"] is None
+    assert portfolio_report([], [], "EUR")["diagnostics"]["effective_holdings"] is None
+
+
 def test_import_roundtrip_and_invalid_documents():
     p = holding()
     encoded = export_portfolio([p], [CashBalance("EUR", 10)], "EUR")

@@ -184,7 +184,19 @@ def portfolio_report(positions, cash, currency, prices=None, max_weight=0.25):
         actions.append({"title": "Keep a reason for every holding",
                         "why": f"{sum(not r['thesis'].strip() for r in rows)} holdings have no saved investment thesis.",
                         "action": "Write why you own each company and what evidence would make you reconsider it.", "scenario": ""})
+    allocation_weights = [(r["value"] or 0) / invested for r in rows] if invested else []
+    concentration = sum(w * w for w in allocation_weights)
+    largest = rows[0] if rows else None
+    diagnostics = {
+        "effective_holdings": 1 / concentration if concentration else None,
+        "cash_weight": cash_value / total if total else None,
+        "over_limit": sum(r["weight"] > max_weight for r in rows),
+        "largest_drop_20": largest["value"] * .2 if largest and complete else None,
+        "new_cash_to_limit": max(0, largest["value"] / max_weight - total) if largest and complete else None,
+        "usd_drop_10": currencies.get("USD", 0) * .1 if complete and currency != "USD" else None,
+    }
     return {"rows": rows, "total": total if rows or cash else None, "invested": invested,
+            "diagnostics": diagnostics,
             "cash": cash_value, "complete": complete, "daily": daily,
             "daily_coverage": len(daily_rows), "sectors": sectors, "currencies": currencies,
             "actions": actions, "top_three": sum(r["weight"] for r in rows[:3])}

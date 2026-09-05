@@ -109,6 +109,16 @@ st.markdown(
     .radar-status {display:inline-block;border-radius:999px;background:#132c2c;border:1px solid #2d6c68;padding:4px 10px;color:#8ff4d0;font-size:.72rem;font-weight:700;letter-spacing:.08em;}
     .radar-section-note {color:#a9b7ca;font-size:.92rem;line-height:1.55;}
     .radar-nav-spacer {height:.5rem;}
+    .folio-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0 20px;}
+    .folio-kpi {border:1px solid #40516c;border-left:4px solid var(--accent);background:#131e30;border-radius:12px;padding:16px;}
+    .folio-label {color:#e2e8f0;font-size:.9rem;font-weight:600;}
+    .folio-kpi strong {display:block;font-size:1.8rem;line-height:1.3;color:var(--accent);margin:6px 0;}
+    .folio-kpi p {color:#cbd5e1;font-size:.9rem;line-height:1.45;margin:0;}
+    .amber {--accent:#fbbf24;} .blue {--accent:#93c5fd;} .purple {--accent:#c4b5fd;} .teal {--accent:#5eead4;} .rose {--accent:#fda4af;}
+    .folio-pills {display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 24px;}
+    .folio-pills span {border:1px solid var(--accent);color:var(--accent);background:#131e30;padding:7px 12px;border-radius:999px;font-size:.9rem;font-weight:600;}
+    [data-testid="stCaptionContainer"] {color:#b8c6d9;}
+    h4 {color:#e2e8f0 !important;border-bottom:1px solid #344155;padding-bottom:8px !important;}
     .st-key-active_dashboard_view [role="radiogroup"] {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
     .st-key-active_dashboard_view [role="radiogroup"] label {border:1px solid #38537a;border-radius:10px;padding:8px 12px;margin:0;background:#121e30;min-height:48px;cursor:pointer;}
     .st-key-active_dashboard_view [role="radiogroup"] label:has(input:checked) {background:#17433e;border-color:#78f0c4;}
@@ -121,6 +131,7 @@ st.markdown(
     [data-testid="stRadio"] label {min-height:44px;align-items:center;}
     [data-testid="stMainBlockContainer"] {max-width:1280px;padding-top:4.5rem;padding-bottom:4rem;}
     @media (max-width: 768px) {
+      .folio-kpi {padding:12px;} .folio-kpi strong {font-size:1.4rem;overflow-wrap:anywhere;}
       .st-key-active_dashboard_view [role="radiogroup"] {grid-template-columns:repeat(2,minmax(0,1fr));}
       [data-testid="stMainBlockContainer"] {padding:4.25rem 1rem 3rem;}
       h1 {font-size:2rem !important;line-height:1.12 !important;}

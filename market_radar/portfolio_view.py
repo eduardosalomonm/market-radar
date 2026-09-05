@@ -4,6 +4,7 @@ import os
 import time
 from dataclasses import replace
 from datetime import datetime
+from html import escape
 
 import pandas as pd
 import plotly.express as px
@@ -13,6 +14,16 @@ from .catalog import search_company_catalog
 from .models import CashBalance, PortfolioPosition
 from .portfolio_tracker import export_portfolio, import_portfolio, portfolio_report, refresh_prices
 from .providers import AlpacaProvider
+
+
+def insight_cards(items):
+    """Escape user-controlled labels; color supplements, never replaces, text."""
+    cards = "".join(
+        f'<article class="folio-kpi {tone}"><div class="folio-label">{escape(label)}</div>'
+        f'<strong>{escape(value)}</strong><p>{escape(note)}</p></article>'
+        for label, value, note, tone in items
+    )
+    st.markdown(f'<div class="folio-grid">{cards}</div>', unsafe_allow_html=True)
 
 
 class SessionPortfolio:
@@ -114,16 +125,54 @@ def render_portfolio(repository, catalog, public=False):
     columns[2].metric("Cash", fmt(report["cash"]))
     st.caption(f"Comparable daily prices: {report['daily_coverage']}/{len(positions)} holdings. Daily change holds shares and FX fixed; deposits, trades, dividends and fees are excluded.")
     if positions:
-        st.write(f"Your three largest holdings account for **{report['top_three']:.1%}** of known value.")
-        st.markdown("#### Your portfolio review")
-        for action in report["actions"]:
-            with st.container(border=True):
+        d = report["diagnostics"]
+        largest = report["rows"][0]
+        st.markdown("#### Your risk, in 10 seconds")
+        insight_cards([
+            ("Largest position", f"{largest['weight']:.1%}", largest["ticker"] + f" · your limit {limit}%", "amber" if d["over_limit"] else "blue"),
+            ("Top 3 concentration", f"{report['top_three']:.1%}", "Share of known portfolio value", "purple"),
+            ("Effective holdings", f"{d['effective_holdings']:.1f}" if d["effective_holdings"] else "—", f"Across {len(positions)} positions · allocation only", "blue"),
+            ("Cash share", f"{d['cash_weight']:.1%}" if d["cash_weight"] is not None else "—", "Uninvested share · not a target", "teal"),
+        ])
+        st.caption("Effective holdings: the number of equal-sized positions with the same concentration. Excludes cash; does not measure correlation or ETF overlap.")
+        st.markdown("#### Quick takeaways")
+        pills = [(f"{d['over_limit']} above your position limit", "amber"),
+                 (f"{report['daily_coverage']}/{len(positions)} daily prices available", "blue"),
+                 ("Complete valuation" if report["complete"] else "Partial valuation", "teal" if report["complete"] else "amber")]
+        st.markdown('<div class="folio-pills">' + ''.join(
+            f'<span class="{tone}">{escape(label)}</span>' for label, tone in pills) + '</div>', unsafe_allow_html=True)
+        if report["complete"] and report["total"] > 0:
+            st.markdown("#### What could move your balance?")
+            scenarios = [(f"{largest['ticker']} falls 20%", fmt(-d["largest_drop_20"]),
+                          f"Portfolio impact: −{d['largest_drop_20'] / report['total']:.1%} · other prices fixed", "rose")]
+            if d["usd_drop_10"] is not None:
+                scenarios.append((f"USD falls 10% vs {currency}", fmt(-d["usd_drop_10"]), "USD-quoted positions only · stock prices fixed", "purple"))
+            insight_cards(scenarios)
+            st.caption("Separate hypothetical shocks—not forecasts. No fees, taxes, correlations or ETF look-through included.")
+            st.markdown("#### A next step to consider")
+            if d["over_limit"]:
+                st.write(f"**Review {largest['ticker']} before adding more.** It exceeds your own {limit}% position limit.")
+                insight_cards([
+                    ("Without selling", fmt(d["new_cash_to_limit"]), f"New money elsewhere to bring {largest['ticker']} to {limit}%", "blue"),
+                    ("Reduce the position", fmt(largest["value"] - report["total"] * limit / 100),
+                     f"Shift from {largest['ticker']} to cash to reach {limit}% · before tax/fees", "amber"),
+                ])
+                st.caption("These are arithmetic alternatives, not instructions to invest or sell. Both assume unchanged prices.")
+            else:
+                st.success("No holding exceeds your chosen limit. Check shared sector exposure and your investment thesis next.")
+        with st.expander("More context & review notes"):
+            for action in report["actions"]:
                 st.markdown(f"**{action['title']}**")
                 st.write(action["why"])
                 st.write(action["action"])
-                if action["scenario"]:
-                    st.caption(action["scenario"])
-        st.caption("Scenarios use saved values and assume no fees or taxes. They help you review risk; they do not predict returns.")
+        st.markdown("#### Allocation map")
+        valued = [r for r in report["rows"] if r["value"] is not None and r["value"] > 0]
+        if valued:
+            allocation = px.treemap(pd.DataFrame(valued), path=["sector", "ticker"], values="value", color="sector",
+                                    color_discrete_sequence=["#60a5fa", "#a78bfa", "#2dd4bf", "#fbbf24", "#fb7185", "#38bdf8"])
+            allocation.update_layout(height=330, margin=dict(t=5, b=5, l=0, r=0))
+            st.plotly_chart(allocation, use_container_width=True, config={"displayModeBar": False})
+            st.caption("Box area = position value. Colors = recorded sectors, not risk ratings. ETF underlying holdings are not expanded.")
         st.markdown("#### Holdings")
         for row in report["rows"]:
             with st.expander(f"{row['ticker']} · {row['name']} · {fmt(row['value'])} · {row['weight']:.1%}"):
@@ -135,7 +184,8 @@ def render_portfolio(repository, catalog, public=False):
         if valued:
             st.markdown("#### Where your money is")
             frame = pd.DataFrame(valued)
-            chart = px.bar(frame, x="value", y="ticker", orientation="h", labels={"value": currency, "ticker": "Holding"})
+            chart = px.bar(frame, x="value", y="ticker", color="sector", orientation="h", labels={"value": currency, "ticker": "Holding"},
+                           color_discrete_sequence=["#60a5fa", "#a78bfa", "#2dd4bf", "#fbbf24", "#fb7185", "#38bdf8"])
             chart.update_layout(yaxis={"autorange": "reversed"}, height=max(280, 24 * len(frame)))
             st.plotly_chart(chart, use_container_width=True, config={"displayModeBar": False})
         contributors = [r for r in report["rows"] if r["daily_change"] is not None]
