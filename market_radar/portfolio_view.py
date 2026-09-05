@@ -71,9 +71,9 @@ def render_portfolio(repository, catalog, public=False):
     currency = repo.get_setting("portfolio_base_currency", "USD")
     def fmt(value):
         return f"{currency} {value:,.2f}" if value is not None else "Unavailable"
-    st.subheader("My Portfolio")
+    st.markdown("#### Privacy & prices")
     if public:
-        st.info("Your portfolio is separate from other visitors. This guest workspace resets when you reload or leave. Download a backup to restore it later. Saved accounts are not enabled yet.")
+        st.info("Private guest session · Not saved after reload. Download a backup before leaving. Accounts are not enabled yet.")
     else:
         st.caption("Your holdings are saved on this computer. Values below use broker references or real completed market closes.")
 
@@ -100,10 +100,14 @@ def render_portfolio(repository, catalog, public=False):
     if any(p.reference_price is not None and p.reference_price_at is None for p in positions):
         st.warning("Some broker prices have an unknown date. Confirm their date in the holding editor before enabling automatic replacement by market closes.")
 
-    limit = st.slider("Single holding review limit", 10, 60, int(repo.get_setting("position_limit", "25")), 5,
-                      help="Your own concentration threshold. This is a review prompt, not an automatic sell instruction.")
+    with st.expander("Review settings"):
+        limit = st.slider("Single holding review limit", 10, 60, int(repo.get_setting("position_limit", "25")), 5,
+                          help="Your concentration threshold—not an automatic sell instruction.")
     repo.set_setting("position_limit", str(limit))
     report = portfolio_report(positions, cash, currency, cached, limit / 100)
+    st.markdown("#### At a glance")
+    if not positions:
+        st.info("Start with one holding: search a company below, enter your shares, then save. Or restore a portfolio backup.")
     columns = st.columns(3)
     columns[0].metric("Portfolio value" if report["complete"] else "Known portfolio value", fmt(report["total"]))
     columns[1].metric("Last session change", fmt(report["daily"]))
@@ -129,6 +133,7 @@ def render_portfolio(repository, catalog, public=False):
                 st.write(row["thesis"] or "Add your investment thesis below.")
         valued = [r for r in report["rows"] if r["value"] is not None]
         if valued:
+            st.markdown("#### Where your money is")
             frame = pd.DataFrame(valued)
             chart = px.bar(frame, x="value", y="ticker", orientation="h", labels={"value": currency, "ticker": "Holding"})
             chart.update_layout(yaxis={"autorange": "reversed"}, height=max(280, 24 * len(frame)))
@@ -192,7 +197,8 @@ def render_portfolio(repository, catalog, public=False):
                     st.rerun()
                 except ValueError as exc:
                     st.error(str(exc))
-    with st.expander("Import or back up your portfolio"):
+    st.markdown("#### Backup & restore")
+    with st.expander("Import or back up your portfolio", expanded=not positions):
         st.caption("JSON import merges holdings by ticker after validating the full file. Backups contain your financial data; keep them private.")
         st.download_button("Download portfolio backup", export_portfolio(positions, cash, currency), "my-portfolio.json", "application/json")
         sample = PortfolioPosition("AAPL", "Apple", "Information Technology", "XLK", 1, quote_currency=currency)

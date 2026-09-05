@@ -360,8 +360,8 @@ class Repository:
                 average_cost=float(row["average_cost"]) if row["average_cost"] is not None else None,
                 industry=row["industry"],
                 thesis=row["thesis"],
-                created_at=datetime.fromisoformat(row["created_at"]),
-                updated_at=datetime.fromisoformat(row["updated_at"]),
+                created_at=datetime.fromisoformat(row["created_at"].replace("Z", "+00:00")),
+                updated_at=datetime.fromisoformat(row["updated_at"].replace("Z", "+00:00")),
                 quote_currency=row["quote_currency"],
                 fx_to_base=float(row["fx_to_base"]),
                 reference_price=(
@@ -373,7 +373,7 @@ class Repository:
                     else None
                 ),
                 reference_price_at=(
-                    datetime.fromisoformat(row["reference_price_at"])
+                    datetime.fromisoformat(row["reference_price_at"].replace("Z", "+00:00"))
                     if row["reference_price_at"]
                     else None
                 ),
@@ -421,7 +421,7 @@ class Repository:
                 currency=row["currency"],
                 amount=float(row["amount"]),
                 fx_to_base=float(row["fx_to_base"]),
-                updated_at=datetime.fromisoformat(row["updated_at"]),
+                updated_at=datetime.fromisoformat(row["updated_at"].replace("Z", "+00:00")),
             )
             for row in rows
         ]

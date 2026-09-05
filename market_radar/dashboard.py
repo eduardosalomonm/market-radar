@@ -90,7 +90,7 @@ PAGE_LABELS = {
     "Method & Data": "Method & Data",
 }
 
-st.set_page_config(page_title="FolioShift", page_icon="◒", layout="wide")
+st.set_page_config(page_title="FolioShift", page_icon="◒", layout="wide", initial_sidebar_state="collapsed")
 st.markdown(
     """
     <style>
@@ -109,11 +109,16 @@ st.markdown(
     .radar-status {display:inline-block;border-radius:999px;background:#132c2c;border:1px solid #2d6c68;padding:4px 10px;color:#8ff4d0;font-size:.72rem;font-weight:700;letter-spacing:.08em;}
     .radar-section-note {color:#a9b7ca;font-size:.92rem;line-height:1.55;}
     .radar-nav-spacer {height:.5rem;}
+    .st-key-active_dashboard_view [role="radiogroup"] {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+    .st-key-active_dashboard_view [role="radiogroup"] label {border:1px solid #38537a;border-radius:10px;padding:8px 12px;margin:0;background:#121e30;min-height:48px;cursor:pointer;}
+    .st-key-active_dashboard_view [role="radiogroup"] label:has(input:checked) {background:#17433e;border-color:#78f0c4;}
+    .st-key-active_dashboard_view [role="radiogroup"] label:focus-within {outline:2px solid #78f0c4;outline-offset:2px;}
     div[data-testid="stAlert"] {border-radius:12px;}
     [data-testid="stPopover"] > button {min-height:46px;justify-content:space-between;border-color:#38537a;}
     [data-testid="stRadio"] label {min-height:44px;align-items:center;}
     [data-testid="stMainBlockContainer"] {max-width:1280px;padding-top:4.5rem;padding-bottom:4rem;}
     @media (max-width: 768px) {
+      .st-key-active_dashboard_view [role="radiogroup"] {grid-template-columns:repeat(2,minmax(0,1fr));}
       [data-testid="stMainBlockContainer"] {padding:4.25rem 1rem 3rem;}
       h1 {font-size:2rem !important;line-height:1.12 !important;}
       h2 {font-size:1.45rem !important;line-height:1.2 !important;}
@@ -329,16 +334,18 @@ def money(value: float, currency: str, decimals: int = 0, signed: bool = False) 
 
 st.markdown('<div class="radar-nav-spacer" aria-hidden="true"></div>', unsafe_allow_html=True)
 st.title("FolioShift")
-st.caption("What changed. What matters. · Personal portfolio intelligence after the close.")
-view = st.selectbox(
+st.caption("Your portfolio. The markets. What matters next.")
+view = st.radio(
     "Menu",
     PAGES,
     index=5 if PUBLIC_DEMO or portfolio_positions else 0,
     key="active_dashboard_view",
     format_func=PAGE_LABELS.get,
-    help="Choose the part of FolioShift you want to view.",
+    horizontal=True,
 )
-st.caption(f"Current: {PAGE_LABELS[view]} · {PAGE_DESCRIPTIONS[view]}")
+st.divider()
+st.subheader(PAGE_LABELS[view])
+st.caption(PAGE_DESCRIPTIONS[view])
 
 mode_label = "SYNTHETIC DEMO DATA" if scan.provider == "demo" else "LIVE MARKET DATA"
 if view == "6 · Watchlist":
@@ -348,18 +355,6 @@ if view != "6 · Watchlist":
     st.caption(
         f"Viewing scan #{scan.id} · market session {scan.as_of.isoformat()} · {scan.status} · "
         f"{scan.provider} / {scan.option_feed} options feed"
-    )
-with st.expander("New here? Read this 30-second guide"):
-    st.markdown(
-        """
-        1. **Executive Brief** explains the market story, global backdrop and most important opportunities in plain language.
-        2. **Global Macro** reads equities, credit, rates, the dollar and commodities together.
-        3. **Trade Ideas** lists only setups that passed the 65-point evidence threshold and technical checks.
-        4. A plan is **conditional**: nothing happens unless price reaches the trigger. The invalidation is the planned exit
-           if the setup fails; 1R and 2R are one and two times the amount risked.
-
-        Higher evidence means more of this scanner's inputs agree. It does **not** mean a higher guaranteed win rate.
-        """
     )
 if scan.option_feed == "indicative" and view in {"3 · Opportunity Map", "4 · Trade Ideas", "5 · Stock Explorer"}:
     st.warning(
@@ -981,16 +976,12 @@ elif view == "3 · Opportunity Map":
     st.subheader("Where price and options activity agree—or conflict")
     st.markdown(
         """
-        **How to read this chart**
+        #### How to read it
 
-        - **Each dot is one stock.** Its position compares two different signals.
-        - **Left ↔ right is relative price, not a return percentage.** It blends five-session performance versus the
-          stock's sector with twenty-session performance versus the S&P 500. Leaders move right; laggards move left.
-        - **Down ↕ up is estimated options sentiment.** Trades near the ask are treated as buyer-initiated and trades
-          near the bid as seller-initiated. Bought calls and sold puts move the score up; bought puts and sold calls
-          move it down.
-        - **Dot size is evidence strength.** Farther from the center means a clearer directional reading; near the
-          center means the signals are weak or mixed.
+        Each dot is one stock. **Right:** stronger relative price. **Left:** weaker.
+        **Up:** bullish options pressure. **Down:** bearish pressure.
+        Bigger dots have stronger evidence. Near the center, signals are weaker.
+        The price axis is a ranking, not a return percentage.
         """
     )
     st.info(
@@ -1018,9 +1009,11 @@ elif view == "3 · Opportunity Map":
         )
     rotation, mix = st.columns([0.67, 0.33])
     with rotation:
+        st.markdown("#### Sector performance")
         st.caption("Green means a sector beat SPY that week; red means it lagged SPY.")
         st.plotly_chart(heatmap_chart(), use_container_width=True)
     with mix:
+        st.markdown("#### Signal mix")
         st.plotly_chart(opportunity_mix_chart(), use_container_width=True)
 
 elif view == "4 · Trade Ideas":

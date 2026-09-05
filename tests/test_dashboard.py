@@ -14,7 +14,7 @@ from market_radar.repository import Repository
 class DashboardTest(unittest.TestCase):
     @staticmethod
     def navigation(app):
-        return next(item for item in app.selectbox if item.label == "Menu")
+        return next(item for item in app.radio if item.label == "Menu")
 
     def setUp(self):
         st.cache_resource.clear()

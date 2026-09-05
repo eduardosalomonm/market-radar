@@ -15,6 +15,12 @@ from market_radar.repository import Repository
 
 
 class RepositoryTest(unittest.TestCase):
+    def test_portfolio_accepts_utc_z_timestamps(self):
+        self.repository.upsert_position(PortfolioPosition("AAA", "Alpha", "Technology", "XLK", 1, 100))
+        with self.repository._connect() as connection:
+            connection.execute("UPDATE portfolio_positions SET updated_at = '2026-09-05T10:01:23Z'")
+        self.assertEqual(self.repository.list_positions()[0].updated_at.utcoffset(), timedelta(0))
+
     def test_closed_outcome_cannot_be_rewritten_by_later_evaluation(self):
         saved = self.repository.get_scan(self.repository.save_scan(self.result))
         idea = saved.ideas[0]
