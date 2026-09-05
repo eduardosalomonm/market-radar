@@ -113,6 +113,9 @@ st.markdown(
     .st-key-active_dashboard_view [role="radiogroup"] label {border:1px solid #38537a;border-radius:10px;padding:8px 12px;margin:0;background:#121e30;min-height:48px;cursor:pointer;}
     .st-key-active_dashboard_view [role="radiogroup"] label:has(input:checked) {background:#17433e;border-color:#78f0c4;}
     .st-key-active_dashboard_view [role="radiogroup"] label:focus-within {outline:2px solid #78f0c4;outline-offset:2px;}
+    .st-key-active_dashboard_view [role="radiogroup"] > * {min-width:0;}
+    .st-key-active_dashboard_view [role="radiogroup"] label {box-sizing:border-box;width:100%;min-width:0;}
+    .st-key-active_dashboard_view [role="radiogroup"] p {white-space:normal;overflow-wrap:anywhere;}
     div[data-testid="stAlert"] {border-radius:12px;}
     [data-testid="stPopover"] > button {min-height:46px;justify-content:space-between;border-color:#38537a;}
     [data-testid="stRadio"] label {min-height:44px;align-items:center;}
