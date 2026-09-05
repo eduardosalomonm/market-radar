@@ -68,20 +68,21 @@ class AlpacaProvider:
                 delay *= 2.0
         raise RuntimeError("unreachable")
 
-    def _stock_request(self, symbols: Iterable[str], start: date, end: date):
+    def _stock_request(self, symbols: Iterable[str], start: date, end: date, adjustment=None):
         if self._sdk is None:
-            return {"symbols": list(symbols), "start": start, "end": end, "feed": "iex"}
+            return {"symbols": list(symbols), "start": start, "end": end, "feed": "iex", "adjustment": adjustment}
         return self._sdk["StockBarsRequest"](
             symbol_or_symbols=list(symbols),
             timeframe=self._sdk["TimeFrame"].Day,
             start=datetime.combine(start, datetime.min.time(), tzinfo=timezone.utc),
             end=datetime.combine(end + timedelta(days=1), datetime.min.time(), tzinfo=timezone.utc),
             feed=self._sdk["DataFeed"].IEX,
+            adjustment=adjustment,
         )
 
-    def get_daily_bars(self, symbols: Iterable[str], start: date, end: date):
+    def get_daily_bars(self, symbols: Iterable[str], start: date, end: date, adjustment=None):
         symbol_list = list(symbols)
-        response = self._retry(lambda: self.stock_client.get_stock_bars(self._stock_request(symbol_list, start, end)))
+        response = self._retry(lambda: self.stock_client.get_stock_bars(self._stock_request(symbol_list, start, end, adjustment)))
         data = _value(response, "data", response)
         result = {}
         for ticker in symbol_list:
@@ -102,6 +103,33 @@ class AlpacaProvider:
                     )
                 )
             result[ticker] = sorted(normalized, key=lambda item: item.session)
+        return result
+
+    def get_portfolio_history(self, symbol, start, end):
+        return self.get_daily_bars([symbol], start, end, adjustment="all").get(symbol, [])
+
+    def get_portfolio_options(self, symbol, as_of):
+        """IV snapshots are independent of trade freshness; never inferred session flow.
+
+        alpaca-py's get_option_chain consumes endpoint pagination internally.
+        Preserve missing fields so the analysis reports exclusion reasons.
+        """
+        response = self._retry(lambda: self.option_client.get_option_chain(self._option_request(symbol, as_of)))
+        data = _value(response, "data", response)
+        result = []
+        for name, snapshot in data.items():
+            try:
+                kind, expiry = self._contract_identity(name)
+                quote = _value(snapshot, "latest_quote")
+                greeks = _value(snapshot, "greeks")
+                timestamp = _value(quote, "timestamp")
+                result.append({"symbol": name, "type": kind, "expiration": expiry.isoformat(),
+                               "strike": int(OCC_PATTERN.match(name.replace(" ", "")).group(4)) / 1000,
+                               "iv": _value(snapshot, "implied_volatility"), "delta": _value(greeks, "delta"),
+                               "bid": _value(quote, "bid_price"), "ask": _value(quote, "ask_price"),
+                               "quote_at": timestamp.isoformat() if isinstance(timestamp, datetime) else timestamp})
+            except (ValueError, TypeError):
+                result.append({"symbol": name, "invalid": True})
         return result
 
     def _option_request(self, symbol: str, as_of: date):

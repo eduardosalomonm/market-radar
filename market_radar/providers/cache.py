@@ -23,6 +23,12 @@ class CachedProvider:
     def latest_completed_session(self, now: datetime) -> date:
         return self.provider.latest_completed_session(now)
 
+    def get_portfolio_history(self, symbol, start, end):
+        return self.provider.get_portfolio_history(symbol, start, end)
+
+    def get_portfolio_options(self, symbol, as_of):
+        return self.provider.get_portfolio_options(symbol, as_of)
+
     def get_daily_bars(self, symbols, start: date, end: date):
         symbol_list = sorted(set(symbols))
         key = self._key(

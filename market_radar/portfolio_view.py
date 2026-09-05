@@ -1,5 +1,6 @@
 """Personal portfolio UI. Public portfolios live only in their visitor's session."""
 
+import json
 import os
 import time
 from dataclasses import replace
@@ -12,6 +13,7 @@ import streamlit as st
 
 from .catalog import search_company_catalog
 from .models import CashBalance, PortfolioPosition
+from .portfolio_intelligence import earnings_exposure, market_report, refresh_intelligence
 from .portfolio_tracker import export_portfolio, import_portfolio, portfolio_report, refresh_prices
 from .providers import AlpacaProvider
 
@@ -24,6 +26,85 @@ def insight_cards(items):
         for label, value, note, tone in items
     )
     st.markdown(f'<div class="folio-grid">{cards}</div>', unsafe_allow_html=True)
+
+
+def render_market_intelligence(repo, report, currency):
+    evidence = repo.cache_get("portfolio_market_evidence") or {}
+    market = market_report(report, evidence)
+    st.markdown("#### What markets say about your portfolio")
+    st.caption("Market evidence—not an expected-growth forecast. Requires real data and valuation dates matching the evidence session.")
+    option_leader = market["options"][0] if market["options"] else None
+    risk_leader = market["risk"][0] if market["risk"] else None
+    skew_rows = [r for r in market["options"] if r["skew_points"] is not None]
+    skew_leader = max(skew_rows, key=lambda r: r["skew_points"]) if skew_rows else None
+    try:
+        records = json.loads(repo.get_setting("earnings_calendar", "[]"))
+    except (ValueError, TypeError):
+        records = []
+    events = earnings_exposure(report["rows"], records, datetime.now().date())
+    with st.expander("Market signals" if evidence else "Market signals · connect a data feed", expanded=bool(evidence)):
+        insight_cards([
+        ("Biggest risk contributor", risk_leader["ticker"] if risk_leader else "Unavailable",
+         f"{risk_leader['risk_share']:.0%} of modeled variance · {risk_leader['capital_weight']:.0%} of capital" if risk_leader else "Needs aligned history for every holding", "amber"),
+        ("Trend breadth · EMA50", f"{market['trend_breadth']:.0%}" if market["trend_breadth"] is not None else "Unavailable",
+         f"Above 50-day trend · covered value {market['history_coverage']:.0%}", "teal"),
+        ("Largest options-priced move", f"{currency} ±{option_leader['movement_value']:,.0f}" if option_leader else "Unavailable",
+         f"{option_leader['ticker']} · 30 days · ±{option_leader['move_pct']:.1f}% stock move" if option_leader else "Needs liquid IV around the 30-day horizon", "blue"),
+        ("Highest protection premium", f"{skew_leader['skew_points']:+.1f} vol pts" if skew_leader else "Unavailable",
+         f"{skew_leader['ticker']} · 25-delta put IV minus call IV" if skew_leader else "Needs comparable put and call quotes", "purple"),
+        ("Earnings · next 30 days", f"{events['weight30']:.0%} of portfolio" if events["coverage"] else "Unavailable",
+         f"Verified calendar coverage: {events['coverage']:.0%} · known events only", "amber"),
+        ("Portfolio movement · 30 days", f"{currency} ±{market['hybrid_move']:,.0f}" if market["hybrid_move"] is not None else "Unavailable",
+         "Hybrid: options IV + historical correlations · fixed FX", "rose"),
+        ])
+    st.caption(f"Options coverage: {market['option_coverage']:.0%} of portfolio value · session {evidence.get('session', 'not loaded')} · {evidence.get('feed', 'feed not connected')}.")
+    if evidence.get("feed") == "indicative":
+        st.warning("Indicative options: delayed trades and modified quotes. Movement and protection pricing are approximations, not directional predictions.")
+    if evidence.get("errors"):
+        st.caption("Refresh incomplete: " + ", ".join(sorted(evidence["errors"])) + ". Previous data is retained; stale inputs are excluded.")
+    with st.expander("Holdings evidence & calculation details"):
+        st.write("Movement estimates describe uncertainty, not profit odds or guaranteed ranges. Standalone stock moves cannot be added to estimate portfolio movement.")
+        st.write("Risk uses up to 252 aligned daily returns (minimum 60), adjusted for corporate actions. Current weights and FX are held fixed; this is not your realized performance. Risk shares can be negative when a holding offsets other risks.")
+        st.caption(f"Model: {evidence.get('version', 'portfolio-market-v1')} · aligned observations: {market['observations']} · source: {evidence.get('source', 'none')}")
+        if market["options"]:
+            st.dataframe(pd.DataFrame(market["options"]), hide_index=True)
+        if market["risk"]:
+            frame = pd.DataFrame(market["risk"])
+            chart = px.bar(frame, x="ticker", y=["capital_weight", "risk_share"], barmode="group",
+                           color_discrete_sequence=["#93c5fd", "#fbbf24"])
+            chart.update_layout(yaxis_tickformat=".0%", yaxis_title="Share", legend_title="Capital vs modeled risk")
+            st.plotly_chart(chart, use_container_width=True)
+        if evidence:
+            exclusions = [{"ticker": t, "valid_quotes": s.get("options", {}).get("valid", 0),
+                           "exclusions": str(s.get("options", {}).get("excluded", {}))}
+                          for t, s in evidence.get("symbols", {}).items() if t in {r["ticker"] for r in report["rows"]}]
+            st.dataframe(pd.DataFrame(exclusions), hide_index=True)
+            st.download_button("Download market evidence", json.dumps(evidence, indent=2), "portfolio-market-evidence.json", "application/json")
+    with st.expander("Verified earnings calendar"):
+        st.caption("No earnings feed is connected. Import reviewed records with a source URL, verification date and coverage period. Uncovered companies remain unknown.")
+        for event in events["events"]:
+            st.write(f"{event['ticker']} · {event['date']}")
+            st.link_button("Calendar source", event["source"])
+        sample = [{"ticker": "AAPL", "earnings_date": None, "verified_on": "YYYY-MM-DD", "coverage_through": "YYYY-MM-DD", "source_url": "https://investor.apple.com/"}]
+        st.download_button("Calendar format", json.dumps(sample, indent=2), "earnings-calendar-example.json", "application/json")
+        uploaded = st.file_uploader("Reviewed earnings calendar JSON", type=["json"], key="earnings_upload")
+        if uploaded and st.button("Save reviewed calendar"):
+            try:
+                if uploaded.size > 250_000:
+                    raise ValueError("Calendar must be under 250 KB")
+                data = json.loads(uploaded.getvalue())
+                if not isinstance(data, list) or len(data) > 100 or not all(isinstance(i, dict) for i in data):
+                    raise ValueError("Use a list of up to 100 company records")
+                for item in data:
+                    if not isinstance(item.get("ticker"), str) or not item.get("source_url", "").startswith("https://"):
+                        raise ValueError("Each company needs a ticker and HTTPS source")
+                    for key in ("verified_on", "coverage_through", "earnings_date"):
+                        if key != "earnings_date" or item.get(key):
+                            datetime.strptime(item[key], "%Y-%m-%d")
+                repo.set_setting("earnings_calendar", json.dumps(data))
+                st.rerun()
+            except (ValueError, KeyError, TypeError, AttributeError) as exc:
+                st.error(f"Calendar not saved: {exc}")
 
 
 class SessionPortfolio:
@@ -101,6 +182,11 @@ def render_portfolio(repository, catalog, public=False):
                     cached = refresh_prices(AlpacaProvider(credential("ALPACA_API_KEY_ID"), credential("ALPACA_API_SECRET_KEY")), repo, positions)
             except Exception:
                 st.warning("Market refresh is unavailable. Your last saved prices are still available.")
+            try:
+                with st.spinner("Updating portfolio market evidence…"):
+                    refresh_intelligence(AlpacaProvider(credential("ALPACA_API_KEY_ID"), credential("ALPACA_API_SECRET_KEY")), repo, positions)
+            except Exception:
+                st.warning("Market evidence refresh unavailable. Last saved evidence is retained.")
         st.caption(f"After-close data · last check: {cached.get('checked_at', 'pending')} · IEX US stocks · FX rates entered manually")
     else:
         st.info("Daily market updates are awaiting data-feed setup. Your saved broker values are available below.")
@@ -165,6 +251,7 @@ def render_portfolio(repository, catalog, public=False):
                 st.markdown(f"**{action['title']}**")
                 st.write(action["why"])
                 st.write(action["action"])
+        render_market_intelligence(repo, report, currency)
         st.markdown("#### Allocation map")
         valued = [r for r in report["rows"] if r["value"] is not None and r["value"] > 0]
         if valued:

@@ -36,6 +36,25 @@ class FakeOptionClient:
 
 
 class ProviderTest(unittest.TestCase):
+    def test_portfolio_options_keep_iv_and_quote_without_latest_trade(self):
+        quote = SimpleNamespace(bid_price=3, ask_price=3.2, timestamp=datetime(2026, 9, 4, 20, tzinfo=timezone.utc))
+        snapshot = SimpleNamespace(latest_quote=quote, greeks=SimpleNamespace(delta=.5), implied_volatility=.4)
+        provider = AlpacaProvider(stock_client=FakeStockClient({}), option_client=FakeOptionClient({"AAPL261004C00150000": snapshot}))
+        result = provider.get_portfolio_options("AAPL", date(2026, 9, 4))
+        self.assertEqual(result[0]["iv"], .4)
+        self.assertEqual(result[0]["strike"], 150)
+        self.assertEqual(result[0]["quote_at"], "2026-09-04T20:00:00+00:00")
+
+    def test_portfolio_history_requests_corporate_action_adjustments(self):
+        class StockClient:
+            def get_stock_bars(self, request):
+                self.request = request
+                return {"AAPL": []}
+        client = StockClient()
+        provider = AlpacaProvider(stock_client=client, option_client=FakeOptionClient({}))
+        provider.get_portfolio_history("AAPL", date(2025, 9, 1), date(2026, 9, 4))
+        self.assertEqual(client.request["adjustment"], "all")
+
     def test_demo_prices_are_consistent_across_overlapping_windows(self):
         provider = DemoProvider()
         earlier = provider.get_daily_bars(["PLTR"], date(2026, 8, 1), date(2026, 8, 27))["PLTR"]

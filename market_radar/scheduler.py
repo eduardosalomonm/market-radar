@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 
 from .outcomes import update_forward_outcomes
 from .pipeline import run_scan
+from .portfolio_intelligence import refresh_intelligence
 from .portfolio_tracker import refresh_prices
 
 NEW_YORK = ZoneInfo("America/New_York")
@@ -17,6 +18,10 @@ def scheduler_tick(provider, repository, universe, now: Optional[datetime] = Non
             refresh_prices(provider, repository, repository.list_positions(), current)
         except Exception as exc:
             print(f"Portfolio refresh unavailable: {type(exc).__name__}", flush=True)
+        try:
+            refresh_intelligence(provider, repository, repository.list_positions(), current)
+        except Exception as exc:
+            print(f"Portfolio evidence unavailable: {type(exc).__name__}", flush=True)
     session = provider.latest_completed_session(current)
     if repository.scheduled_scan_exists(session):
         update_forward_outcomes(provider, repository, session)
