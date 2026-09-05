@@ -12,6 +12,10 @@ from market_radar.repository import Repository
 
 
 class DashboardTest(unittest.TestCase):
+    @staticmethod
+    def navigation(app):
+        return next(item for item in app.selectbox if item.label == "Menu")
+
     def setUp(self):
         st.cache_resource.clear()
         st.cache_data.clear()
@@ -59,7 +63,7 @@ class DashboardTest(unittest.TestCase):
 
         self.assertEqual(app.exception, [])
         self.assertEqual(app.title[0].value, "FolioShift")
-        navigation = next(item for item in app.radio if item.label == "Sections")
+        navigation = self.navigation(app)
         self.assertIn("Daily Brief", navigation.options)
         self.assertIn("Global Economy", navigation.options)
         self.assertIn("Trade Ideas", navigation.options)
@@ -71,14 +75,14 @@ class DashboardTest(unittest.TestCase):
         self.assertEqual(app.exception, [])
         self.assertTrue(any("Market Driver Heatmap" in item.value for item in app.subheader))
 
-        navigation = next(item for item in app.radio if item.label == "Sections")
+        navigation = self.navigation(app)
         navigation.set_value("4 · Trade Ideas").run()
 
         self.assertEqual(app.exception, [])
         self.assertTrue(any("Ranked Ideas" in item.value for item in app.subheader))
         self.assertTrue(any("conditional research plans" in item.value for item in app.info))
 
-        navigation = next(item for item in app.radio if item.label == "Sections")
+        navigation = self.navigation(app)
         navigation.set_value("2 · Global Macro").run()
 
         self.assertEqual(app.exception, [])
@@ -89,9 +93,8 @@ class DashboardTest(unittest.TestCase):
         app_path = Path(__file__).parents[1] / "market_radar" / "dashboard.py"
         app = AppTest.from_file(str(app_path), default_timeout=10).run()
 
-        popover = app.get("popover")[0]
-        self.assertEqual(popover.proto.popover.label, "Menu")
-        navigation = next(item for item in app.radio if item.label == "Sections")
+        navigation = self.navigation(app)
+        self.assertEqual(navigation.label, "Menu")
         self.assertIn("Daily Brief", navigation.options)
         self.assertIn("Stock Explorer", navigation.options)
         self.assertIn("My Portfolio", navigation.options)
@@ -105,7 +108,7 @@ class DashboardTest(unittest.TestCase):
         app_path = Path(__file__).parents[1] / "market_radar" / "dashboard.py"
         app = AppTest.from_file(str(app_path), default_timeout=10).run()
 
-        next(item for item in app.radio if item.label == "Sections").set_value("3 · Opportunity Map").run()
+        self.navigation(app).set_value("3 · Opportunity Map").run()
 
         rendered_text = " ".join(
             item.value for group in (app.markdown, app.caption, app.info) for item in group
@@ -118,7 +121,7 @@ class DashboardTest(unittest.TestCase):
         app_path = Path(__file__).parents[1] / "market_radar" / "dashboard.py"
         app = AppTest.from_file(str(app_path), default_timeout=10).run()
 
-        next(item for item in app.radio if item.label == "Sections").set_value("6 · Watchlist").run()
+        self.navigation(app).set_value("6 · Watchlist").run()
 
         self.assertEqual(app.exception, [])
         search = next(item for item in app.text_input if item.label == "Find a company")
@@ -138,7 +141,7 @@ class DashboardTest(unittest.TestCase):
         app_path = Path(__file__).parents[1] / "market_radar" / "dashboard.py"
         app = AppTest.from_file(str(app_path), default_timeout=10).run()
 
-        next(item for item in app.radio if item.label == "Sections").set_value("6 · Watchlist").run()
+        self.navigation(app).set_value("6 · Watchlist").run()
         next(item for item in app.text_input if item.label == "Find a company").set_value("Nu Bank")
         next(item for item in app.button if item.label == "Search").click().run()
 
@@ -149,7 +152,7 @@ class DashboardTest(unittest.TestCase):
         app_path = Path(__file__).parents[1] / "market_radar" / "dashboard.py"
         app = AppTest.from_file(str(app_path), default_timeout=10).run()
 
-        next(item for item in app.radio if item.label == "Sections").set_value("6 · Watchlist").run()
+        self.navigation(app).set_value("6 · Watchlist").run()
         next(item for item in app.text_input if item.label == "Find a portfolio company").set_value("Palantir")
         next(item for item in app.button if item.label == "Search portfolio companies").click().run()
 
@@ -167,7 +170,7 @@ class DashboardTest(unittest.TestCase):
         app_path = Path(__file__).parents[1] / "market_radar" / "dashboard.py"
         app = AppTest.from_file(str(app_path), default_timeout=10).run()
 
-        next(item for item in app.radio if item.label == "Sections").set_value("5 · Stock Explorer").run()
+        self.navigation(app).set_value("5 · Stock Explorer").run()
 
         self.assertEqual(app.exception, [])
         self.assertTrue(any(item.label == "Latest saved price" for item in app.metric))
@@ -180,7 +183,7 @@ class DashboardTest(unittest.TestCase):
         app_path = Path(__file__).parents[1] / "market_radar" / "dashboard.py"
         app = AppTest.from_file(str(app_path), default_timeout=10).run()
 
-        next(item for item in app.radio if item.label == "Sections").set_value("5 · Stock Explorer").run()
+        self.navigation(app).set_value("5 · Stock Explorer").run()
 
         universe = next(item for item in app.selectbox if item.label == "Explorer universe")
         self.assertIn("Most traded 100", universe.options)
@@ -193,7 +196,7 @@ class DashboardTest(unittest.TestCase):
         result = next(item for item in app.radio if item.label == "Matching stocks")
         self.assertIn("Palantir Technologies — PLTR", result.options)
 
-    def test_public_showcase_is_read_only(self):
+    def test_public_market_controls_are_read_only_but_portfolios_are_isolated(self):
         os.environ["MARKET_RADAR_PUBLIC_DEMO"] = "1"
         st.cache_resource.clear()
         app_path = Path(__file__).parents[1] / "market_radar" / "dashboard.py"
@@ -204,13 +207,18 @@ class DashboardTest(unittest.TestCase):
         self.assertNotIn("Run demo scan", sidebar_buttons)
         self.assertNotIn("Run live Alpaca scan", sidebar_buttons)
 
-        next(item for item in app.radio if item.label == "Sections").set_value("6 · Watchlist").run()
+        self.navigation(app).set_value("6 · Watchlist").run()
         next(item for item in app.text_input if item.label == "Find a portfolio company").set_value("Palantir")
         next(item for item in app.button if item.label == "Search portfolio companies").click().run()
 
-        read_only = next(item for item in app.button if item.label == "Public demo · read only")
-        self.assertTrue(read_only.disabled)
-        self.assertFalse(any(item.label == "Remove from watchlist" for item in app.button))
+        shared_before = Repository(self.database).list_positions()
+        next(item for item in app.number_input if item.label == "Shares").set_value(7.0)
+        next(item for item in app.button if item.label == "Save holding").click().run()
+        self.assertEqual(app.exception, [])
+        self.assertEqual(app.session_state["visitor_portfolio"]["positions"][0].shares, 7.0)
+        self.assertEqual(Repository(self.database).list_positions(), shared_before)
+        other = AppTest.from_file(str(app_path), default_timeout=10).run()
+        self.assertEqual(other.session_state["visitor_portfolio"]["positions"], [])
 
 
 if __name__ == "__main__":

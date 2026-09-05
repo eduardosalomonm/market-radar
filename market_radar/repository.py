@@ -1,10 +1,11 @@
 import json
+import math
 import sqlite3
 from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 
-from .models import IdeaOutcome, PortfolioPosition, ScanResult, SymbolSignal, TradeIdea, UniverseMember
+from .models import CashBalance, IdeaOutcome, PortfolioPosition, ScanResult, SymbolSignal, TradeIdea, UniverseMember
 
 
 class Repository:
@@ -76,6 +77,22 @@ class Repository:
                     average_cost REAL,
                     thesis TEXT NOT NULL DEFAULT '',
                     created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    quote_currency TEXT NOT NULL DEFAULT 'USD',
+                    fx_to_base REAL NOT NULL DEFAULT 1.0,
+                    reference_price REAL,
+                    reference_value_base REAL,
+                    reference_price_at TEXT,
+                    reference_source TEXT NOT NULL DEFAULT ''
+                );
+                CREATE TABLE IF NOT EXISTS app_settings (
+                    key TEXT PRIMARY KEY,
+                    value TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS cash_balances (
+                    currency TEXT PRIMARY KEY,
+                    amount REAL NOT NULL,
+                    fx_to_base REAL NOT NULL DEFAULT 1.0,
                     updated_at TEXT NOT NULL
                 );
                 CREATE TABLE IF NOT EXISTS raw_cache (
@@ -88,6 +105,18 @@ class Repository:
             columns = {row[1] for row in db.execute("PRAGMA table_info(watchlist)")}
             if "industry" not in columns:
                 db.execute("ALTER TABLE watchlist ADD COLUMN industry TEXT NOT NULL DEFAULT 'Unclassified'")
+            position_columns = {row[1] for row in db.execute("PRAGMA table_info(portfolio_positions)")}
+            position_migrations = {
+                "quote_currency": "TEXT NOT NULL DEFAULT 'USD'",
+                "fx_to_base": "REAL NOT NULL DEFAULT 1.0",
+                "reference_price": "REAL",
+                "reference_value_base": "REAL",
+                "reference_price_at": "TEXT",
+                "reference_source": "TEXT NOT NULL DEFAULT ''",
+            }
+            for column, definition in position_migrations.items():
+                if column not in position_columns:
+                    db.execute(f"ALTER TABLE portfolio_positions ADD COLUMN {column} {definition}")
 
     def scheduled_scan_exists(self, as_of: date) -> bool:
         with self._connect() as db:
@@ -251,10 +280,22 @@ class Repository:
         ]
 
     def upsert_position(self, position: PortfolioPosition) -> None:
-        if position.shares <= 0:
+        if not math.isfinite(position.shares) or position.shares <= 0:
             raise ValueError("Position shares must be positive")
-        if position.average_cost is not None and position.average_cost < 0:
+        if position.average_cost is not None and (
+            not math.isfinite(position.average_cost) or position.average_cost < 0
+        ):
             raise ValueError("Average cost cannot be negative")
+        if not math.isfinite(position.fx_to_base) or position.fx_to_base <= 0:
+            raise ValueError("FX rate must be positive")
+        if position.reference_price is not None and (
+            not math.isfinite(position.reference_price) or position.reference_price < 0
+        ):
+            raise ValueError("Reference price cannot be negative")
+        if position.reference_value_base is not None and (
+            not math.isfinite(position.reference_value_base) or position.reference_value_base < 0
+        ):
+            raise ValueError("Reference value cannot be negative")
         now = datetime.utcnow()
         created_at = position.created_at or now
         updated_at = position.updated_at or now
@@ -262,8 +303,10 @@ class Repository:
             db.execute(
                 """
                 INSERT INTO portfolio_positions (
-                    ticker, name, sector, sector_etf, industry, shares, average_cost, thesis, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ticker, name, sector, sector_etf, industry, shares, average_cost, thesis, created_at, updated_at,
+                    quote_currency, fx_to_base, reference_price, reference_value_base, reference_price_at,
+                    reference_source
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(ticker) DO UPDATE SET
                     name=excluded.name,
                     sector=excluded.sector,
@@ -272,7 +315,13 @@ class Repository:
                     shares=excluded.shares,
                     average_cost=excluded.average_cost,
                     thesis=excluded.thesis,
-                    updated_at=excluded.updated_at
+                    updated_at=excluded.updated_at,
+                    quote_currency=excluded.quote_currency,
+                    fx_to_base=excluded.fx_to_base,
+                    reference_price=excluded.reference_price,
+                    reference_value_base=excluded.reference_value_base,
+                    reference_price_at=excluded.reference_price_at,
+                    reference_source=excluded.reference_source
                 """,
                 (
                     position.ticker.upper(),
@@ -285,6 +334,12 @@ class Repository:
                     position.thesis,
                     created_at.isoformat(),
                     updated_at.isoformat(),
+                    position.quote_currency.upper(),
+                    position.fx_to_base,
+                    position.reference_price,
+                    position.reference_value_base,
+                    position.reference_price_at.isoformat() if position.reference_price_at else None,
+                    position.reference_source,
                 ),
             )
 
@@ -307,6 +362,66 @@ class Repository:
                 thesis=row["thesis"],
                 created_at=datetime.fromisoformat(row["created_at"]),
                 updated_at=datetime.fromisoformat(row["updated_at"]),
+                quote_currency=row["quote_currency"],
+                fx_to_base=float(row["fx_to_base"]),
+                reference_price=(
+                    float(row["reference_price"]) if row["reference_price"] is not None else None
+                ),
+                reference_value_base=(
+                    float(row["reference_value_base"])
+                    if row["reference_value_base"] is not None
+                    else None
+                ),
+                reference_price_at=(
+                    datetime.fromisoformat(row["reference_price_at"])
+                    if row["reference_price_at"]
+                    else None
+                ),
+                reference_source=row["reference_source"],
+            )
+            for row in rows
+        ]
+
+    def set_setting(self, key: str, value: str) -> None:
+        with self._connect() as db:
+            db.execute(
+                "INSERT INTO app_settings (key, value) VALUES (?, ?) "
+                "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                (key, value),
+            )
+
+    def get_setting(self, key: str, default: str) -> str:
+        with self._connect() as db:
+            row = db.execute("SELECT value FROM app_settings WHERE key = ?", (key,)).fetchone()
+        return row["value"] if row else default
+
+    def upsert_cash_balance(self, balance: CashBalance) -> None:
+        if not math.isfinite(balance.amount) or balance.amount < 0:
+            raise ValueError("Cash balance cannot be negative")
+        if not math.isfinite(balance.fx_to_base) or balance.fx_to_base <= 0:
+            raise ValueError("FX rate must be positive")
+        updated_at = balance.updated_at or datetime.utcnow()
+        with self._connect() as db:
+            db.execute(
+                """
+                INSERT INTO cash_balances (currency, amount, fx_to_base, updated_at) VALUES (?, ?, ?, ?)
+                ON CONFLICT(currency) DO UPDATE SET
+                    amount=excluded.amount,
+                    fx_to_base=excluded.fx_to_base,
+                    updated_at=excluded.updated_at
+                """,
+                (balance.currency.upper(), balance.amount, balance.fx_to_base, updated_at.isoformat()),
+            )
+
+    def list_cash_balances(self) -> list[CashBalance]:
+        with self._connect() as db:
+            rows = db.execute("SELECT * FROM cash_balances ORDER BY currency").fetchall()
+        return [
+            CashBalance(
+                currency=row["currency"],
+                amount=float(row["amount"]),
+                fx_to_base=float(row["fx_to_base"]),
+                updated_at=datetime.fromisoformat(row["updated_at"]),
             )
             for row in rows
         ]
@@ -325,6 +440,8 @@ class Repository:
                 """
                 INSERT INTO outcomes (idea_id, payload_json, updated_at) VALUES (?, ?, ?)
                 ON CONFLICT(idea_id) DO UPDATE SET payload_json=excluded.payload_json, updated_at=excluded.updated_at
+                WHERE json_extract(outcomes.payload_json, '$.closed_on') IS NULL
+                  AND json_extract(outcomes.payload_json, '$.status') != 'expired'
                 """,
                 (outcome.idea_id, json.dumps(outcome.to_dict(), sort_keys=True), datetime.utcnow().isoformat()),
             )

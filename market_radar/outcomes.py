@@ -4,7 +4,11 @@ from .analytics import evaluate_idea
 
 
 def update_forward_outcomes(provider, repository, as_of: date) -> int:
-    ideas = repository.list_scheduled_ideas()
+    finished = {
+        outcome.idea_id for outcome in repository.list_outcomes()
+        if outcome.closed_on is not None or outcome.status == 'expired'
+    }
+    ideas = [idea for idea in repository.list_scheduled_ideas() if idea.id not in finished]
     if not ideas:
         return 0
     earliest = min(idea.scan_date for idea in ideas)

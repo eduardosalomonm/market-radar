@@ -153,6 +153,12 @@ class PortfolioPosition:
     thesis: str = ""
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    quote_currency: str = "USD"
+    fx_to_base: float = 1.0
+    reference_price: Optional[float] = None
+    reference_value_base: Optional[float] = None
+    reference_price_at: Optional[datetime] = None
+    reference_source: str = ""
 
     def to_universe_member(self) -> UniverseMember:
         return UniverseMember(
@@ -163,6 +169,14 @@ class PortfolioPosition:
             is_watchlist=True,
             industry=self.industry,
         )
+
+
+@dataclass(frozen=True)
+class CashBalance:
+    currency: str
+    amount: float
+    fx_to_base: float = 1.0
+    updated_at: Optional[datetime] = None
 
 
 @dataclass(frozen=True)

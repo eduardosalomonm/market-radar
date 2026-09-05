@@ -14,7 +14,7 @@ if [ ! -x .venv/bin/python ]; then
   "$PYTHON_BIN" -m venv .venv
 fi
 
-.venv/bin/python -m pip install --disable-pip-version-check -e .
+.venv/bin/python -m pip install --disable-pip-version-check --no-build-isolation -e .
 mkdir -p data
 if [ ! -f .env ]; then
   cp .env.example .env

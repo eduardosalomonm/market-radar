@@ -2,6 +2,8 @@
 
 **What changed. What matters.** Personal portfolio intelligence after the close.
 
+The public edition now includes isolated guest portfolio workspaces with company search, manual holdings, cash, JSON import/export, concentration reviews and currency scenarios. Guest workspaces reset with the browser session; saved accounts are not enabled yet. See [portfolio product status and daily-feed setup](docs/portfolio-product.md) for implemented features and remaining infrastructure.
+
 **Public showcase:** [market-radar-insights.streamlit.app](https://market-radar-insights.streamlit.app/)
 
 FolioShift turns a portfolio and watchlist into a low-noise daily update. It scans a dated S&P 500 universe plus the eleven Select Sector SPDR ETFs, compares price movement with an approximation of options pressure, connects the global market backdrop to the user's exposures, and forward-tracks every frozen conditional idea.
@@ -41,7 +43,7 @@ Saved scans, ideas, outcomes, holdings, and watchlist entries are stored in `dat
 The company search is broader than the nightly base scan. It merges the dated S&P 500 seed with a local catalog of
 roughly 6,000 Nasdaq-, NYSE-, NYSE American-, Arca-, Cboe-, and IEX-listed operating-company securities. Search by
 official name, familiar alias, or ticker; for example, `Palantir`, `PLTR`, `Nu Bank`, `Nubank`, and `NU` all resolve.
-Adding a company to the portfolio or watchlist includes it in the next price scan and prioritizes it for options enrichment. Portfolio shares and average cost are entered manually; FolioShift does not request brokerage access.
+Adding a company to the portfolio or watchlist includes it in the next price scan and prioritizes it for options enrichment. Portfolio shares and average cost are entered manually; FolioShift does not request brokerage access. The private edition supports a base currency, per-position quote currency and FX conversion, cash balances, and dated broker-snapshot values for listings that the market feed cannot price.
 
 ## Live Alpaca setup
 
@@ -107,7 +109,7 @@ The default dashboard is designed for financially literate non-specialists:
   Each stock has a six-KPI summary, a six-month price/EMA/volume chart, a three-month comparison against its sector ETF
   and SPY, and a plain-language trend/participation reading. Formula-level evidence stays collapsed unless
   **Professional detail** is enabled.
-- **My Portfolio** stores shares, optional average cost and a one-line thesis; it shows P&L, concentration, market context, and the watchlist Daily Pulse.
+- **My Portfolio** stores shares, optional average cost and a one-line thesis; it shows cash, multi-currency value, P&L, largest-position and top-three concentration, allocation and sector charts, market context, and the watchlist Daily Pulse. Every holding identifies whether its price came from a completed live scan or a dated broker snapshot; synthetic scans never overwrite imported broker values.
 - **Catalyst Rail** places source-linked official releases beside the market story and affected ideas.
 - **Client Brief PDF** downloads a dated one-page summary built only from the selected saved scan.
 - **Method & Data** shows feed identity, limitations, formula definitions, and immutable scan history.

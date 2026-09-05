@@ -10,6 +10,17 @@ def _stable_number(value: str) -> int:
     return int(hashlib.sha256(value.encode("utf-8")).hexdigest()[:12], 16)
 
 
+def _closing_price(index: int, seed: int) -> float:
+    """Price at an absolute session index, independent of request boundaries."""
+    base = 40.0 + seed % 160
+    drift = ((seed % 17) - 7) / 10000.0
+    return base * math.exp(
+        0.12 * math.sin(index / 180.0 + seed % 17)
+        + 0.044 * math.sin(index / 11.0 + seed % 31)
+        + drift * 20 * math.sin(index / 20.0)
+    )
+
+
 class DemoProvider:
     name = "demo"
     stock_feed = "synthetic"
@@ -25,32 +36,28 @@ class DemoProvider:
         return current
 
     def get_daily_bars(self, symbols: Iterable[str], start: date, end: date) -> dict[str, list[DailyBar]]:
-        del start
         result = {}
         sessions = []
-        current = end - timedelta(days=420)
+        current = start
         while current <= end:
             if current.weekday() < 5:
                 sessions.append(current)
             current += timedelta(days=1)
-        sessions = sessions[-300:]
         for ticker in symbols:
             seed = _stable_number(ticker)
-            drift = ((seed % 17) - 7) / 10000.0
-            base = 40.0 + seed % 160
             bars = []
-            previous = base
-            for index, session in enumerate(sessions):
-                cycle = math.sin(index / 11.0 + (seed % 31)) * 0.004
+            for session in sessions:
+                elapsed = (session - date(2000, 1, 3)).days
+                index = elapsed // 7 * 5 + elapsed % 7
+                previous = _closing_price(index - 1, seed)
                 shock = math.sin(index * 1.7 + (seed % 13)) * 0.002
-                close = max(5.0, previous * (1.0 + drift + cycle + shock))
+                close = _closing_price(index, seed)
                 open_price = previous * (1.0 + shock / 3.0)
                 spread = close * (0.008 + (seed % 5) / 1000.0)
                 high = max(open_price, close) + spread
                 low = min(open_price, close) - spread
                 volume = 600_000 + (seed % 4_000_000) + 200_000 * (1.0 + math.sin(index / 5.0))
                 bars.append(DailyBar(session, open_price, high, low, close, volume))
-                previous = close
             result[ticker] = bars
         return result
 

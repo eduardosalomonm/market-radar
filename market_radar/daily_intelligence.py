@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from typing import Optional
 
-from .models import PortfolioPosition, ScanResult
+from .models import CashBalance, PortfolioPosition, ScanResult
 
 
 def _score(value: Optional[float]) -> Optional[float]:
@@ -18,13 +18,24 @@ def build_daily_intelligence(
     previous: Optional[ScanResult],
     watchlist: Iterable[str],
     positions: Iterable[PortfolioPosition] = (),
+    base_currency: str = "USD",
+    cash_balances: Iterable[CashBalance] = (),
 ) -> dict[str, object]:
+    if previous and (previous.provider != current.provider or previous.as_of >= current.as_of):
+        previous = None
     current_signals = {signal.ticker: signal for signal in current.signals}
     previous_signals = {signal.ticker: signal for signal in previous.signals} if previous else {}
     current_ideas = {idea.ticker: idea for idea in current.ideas}
     previous_ideas = {idea.ticker: idea for idea in previous.ideas} if previous else {}
 
     saved_positions = list(positions)
+    # Broker holdings must not inherit synthetic prices or options recommendations.
+    if current.provider == "demo":
+        real_tickers = {p.ticker for p in saved_positions if p.reference_source or p.reference_price is not None}
+        current_signals = {t: s for t, s in current_signals.items() if t not in real_tickers}
+        previous_signals = {t: s for t, s in previous_signals.items() if t not in real_tickers}
+        current_ideas = {t: i for t, i in current_ideas.items() if t not in real_tickers}
+        previous_ideas = {t: i for t, i in previous_ideas.items() if t not in real_tickers}
     followed_tickers = {item.upper() for item in watchlist} | {item.ticker.upper() for item in saved_positions}
     pulse = []
     for ticker in sorted(followed_tickers):
@@ -126,29 +137,54 @@ def build_daily_intelligence(
     cost_basis = 0.0
     cost_basis_covered = 0.0
     valued_positions = 0
+    comparable_positions = 0
+    costed_positions = 0
+    live_valued_positions = 0
     for position in saved_positions:
         signal = current_signals.get(position.ticker)
         prior = previous_signals.get(position.ticker)
-        market_value = signal.close * position.shares if signal else None
+        if position.quote_currency != "USD":
+            signal, prior = None, None
+        verified_cost = position.average_cost if "screenshot" not in position.reference_source.lower() else None
+        use_scan_price = signal is not None and not (
+            current.provider == "demo" and position.reference_price is not None
+        )
+        current_price = signal.close if use_scan_price else position.reference_price
+        valuation_source = (
+            f"{current.provider} completed-session close"
+            if use_scan_price
+            else position.reference_source or "Saved reference price"
+        )
+        market_value = (
+            position.reference_value_base
+            if not use_scan_price and position.reference_value_base is not None
+            else current_price * position.shares * position.fx_to_base
+            if current_price is not None
+            else None
+        )
         session_pnl = (
-            (signal.close - prior.close) * position.shares
-            if signal and prior and prior.close
+            (signal.close - prior.close) * position.shares * position.fx_to_base
+            if use_scan_price and signal and prior and prior.close
             else None
         )
         unrealized = (
-            (signal.close - position.average_cost) * position.shares
-            if signal and position.average_cost is not None
+            (current_price - verified_cost) * position.shares * position.fx_to_base
+            if current_price is not None and verified_cost is not None
             else None
         )
         if market_value is not None:
             valued_positions += 1
             portfolio_value += market_value
             sector_values[position.sector] = sector_values.get(position.sector, 0.0) + market_value
+        if use_scan_price:
+            live_valued_positions += 1
         if session_pnl is not None and prior is not None:
+            comparable_positions += 1
             daily_pnl += session_pnl
-            comparable_value += prior.close * position.shares
-        if position.average_cost is not None and market_value is not None:
-            position_cost = position.average_cost * position.shares
+            comparable_value += prior.close * position.shares * position.fx_to_base
+        if verified_cost is not None and market_value is not None:
+            costed_positions += 1
+            position_cost = verified_cost * position.shares * position.fx_to_base
             cost_basis += position_cost
             cost_basis_covered += market_value or 0.0
         position_rows.append(
@@ -157,26 +193,54 @@ def build_daily_intelligence(
                 "name": position.name,
                 "shares": position.shares,
                 "average_cost": position.average_cost,
-                "current_price": signal.close if signal else None,
+                "quote_currency": position.quote_currency,
+                "fx_to_base": position.fx_to_base,
+                "current_price": current_price,
                 "market_value": market_value,
                 "session_pnl": session_pnl,
-                "session_return": signal.close / prior.close - 1 if signal and prior and prior.close else None,
+                "session_return": (
+                    signal.close / prior.close - 1
+                    if use_scan_price and signal and prior and prior.close
+                    else None
+                ),
                 "unrealized_pnl": unrealized,
                 "quadrant": signal.quadrant if signal else None,
                 "evidence": _score(signal.evidence_score) if signal else None,
                 "thesis": position.thesis,
+                "valuation_source": valuation_source,
+                "valuation_as_of": (
+                    current.as_of.isoformat()
+                    if use_scan_price
+                    else position.reference_price_at.date().isoformat()
+                    if position.reference_price_at
+                    else None
+                ),
+                "is_live_market_price": use_scan_price and current.provider != "demo",
             }
         )
+
+    saved_cash = list(cash_balances)
+    cash_value = sum(balance.amount * balance.fx_to_base for balance in saved_cash)
+    total_value = portfolio_value + cash_value
+    for row in position_rows:
+        row["weight"] = (row["market_value"] or 0.0) / total_value if total_value else 0.0
 
     sector_exposure = [
         {
             "sector": sector,
             "market_value": value,
             "weight": value / portfolio_value if portfolio_value else 0.0,
+            "portfolio_weight": value / total_value if total_value else 0.0,
         }
         for sector, value in sorted(sector_values.items(), key=lambda item: item[1], reverse=True)
     ]
     largest_position = max(position_rows, key=lambda row: row["market_value"] or 0, default=None)
+    valued_weights = sorted(
+        ((row["market_value"] or 0.0) / total_value for row in position_rows if row["market_value"] is not None),
+        reverse=True,
+    )
+    top_three_weight = sum(valued_weights[:3])
+    concentration_index = sum(weight**2 for weight in valued_weights)
 
     alerts = []
     new_idea_set = set(new_ideas)
@@ -191,7 +255,7 @@ def build_daily_intelligence(
             reasons.append("new qualified setup")
             severity = "high"
         if ticker in removed_idea_set:
-            reasons.append("no longer clears the evidence threshold")
+            reasons.append("no qualified plan in this scan; review evidence, plan rules and data coverage")
             severity = "high"
         if ticker in quadrant_by_ticker:
             change = quadrant_by_ticker[ticker]
@@ -214,13 +278,40 @@ def build_daily_intelligence(
         )
         if largest_sector["weight"] >= 0.5:
             macro_notes.append("Concentration is high: one sector represents at least half of the valued portfolio.")
-    if risk_score is not None:
+    if largest_position and total_value:
+        macro_notes.append(
+            f"{largest_position['ticker']} is the largest position at {largest_position['weight']:.0%} of total value."
+        )
+    if top_three_weight >= 0.6:
+        macro_notes.append(f"The three largest positions represent {top_three_weight:.0%} of total value.")
+    if risk_score is not None and current.provider != "demo":
         tone = "supportive" if risk_score >= 65 else "defensive" if risk_score < 35 else "mixed"
         macro_notes.append(f"Cross-asset risk appetite is {tone} at {risk_score:.0f}/100.")
+
+    coverage_warnings = []
+    if valued_positions < len(saved_positions):
+        coverage_warnings.append(f"Prices available for {valued_positions}/{len(saved_positions)} holdings; value and sector weights cover only those holdings.")
+    reference_count = valued_positions - live_valued_positions
+    if reference_count:
+        coverage_warnings.append(
+            f"{reference_count} holding(s) use a saved broker snapshot rather than a fresh market close. "
+            "The source and date are shown in the holdings table."
+        )
+    if saved_positions and comparable_positions < len(saved_positions):
+        coverage_warnings.append(f"Comparable prices available for {comparable_positions}/{len(saved_positions)} holdings; change covers only comparable holdings.")
+    if saved_positions and costed_positions < len(saved_positions):
+        coverage_warnings.append(f"Price and cost basis available for {costed_positions}/{len(saved_positions)} holdings; unrealized P&L covers only those holdings.")
+    comparison_complete = previous is not None and all(
+        ticker in current_signals and ticker in previous_signals
+        and current_signals[ticker].options_axis is not None
+        and previous_signals[ticker].options_axis is not None
+        for ticker in followed_tickers
+    )
 
     return {
         "current_as_of": current.as_of.isoformat(),
         "previous_as_of": previous.as_of.isoformat() if previous else None,
+        "comparison_complete": comparison_complete,
         "watchlist_pulse": pulse,
         "changes": {
             "new_ideas": new_ideas,
@@ -233,14 +324,31 @@ def build_daily_intelligence(
             "summary": summary,
         },
         "portfolio": {
+            "base_currency": base_currency.upper(),
+            "coverage_warnings": coverage_warnings,
             "positions": position_rows,
             "position_count": len(saved_positions),
             "market_value": portfolio_value if valued_positions else None,
+            "cash_value": cash_value,
+            "total_value": total_value if valued_positions or saved_cash else None,
+            "cash_weight": cash_value / total_value if total_value else 0.0,
+            "cash_balances": [
+                {
+                    "currency": balance.currency,
+                    "amount": balance.amount,
+                    "fx_to_base": balance.fx_to_base,
+                    "base_value": balance.amount * balance.fx_to_base,
+                    "updated_at": balance.updated_at.isoformat() if balance.updated_at else None,
+                }
+                for balance in saved_cash
+            ],
             "daily_pnl": daily_pnl if comparable_value else None,
             "daily_return": daily_pnl / comparable_value if comparable_value else None,
             "cost_basis": cost_basis if cost_basis else None,
             "unrealized_pnl": cost_basis_covered - cost_basis if cost_basis else None,
             "largest_position": largest_position,
+            "top_three_weight": top_three_weight,
+            "concentration_index": concentration_index,
             "sector_exposure": sector_exposure,
             "macro_notes": macro_notes,
         },

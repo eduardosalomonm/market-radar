@@ -9,12 +9,30 @@ from test_pipeline import FakeProvider
 from test_pipeline import PipelineTest as _PipelineFixture
 
 from market_radar.exports import export_ideas_csv, export_outcomes_json
-from market_radar.models import IdeaOutcome, PortfolioPosition, UniverseMember
+from market_radar.models import CashBalance, IdeaOutcome, PortfolioPosition, UniverseMember
 from market_radar.pipeline import run_scan
 from market_radar.repository import Repository
 
 
 class RepositoryTest(unittest.TestCase):
+    def test_closed_outcome_cannot_be_rewritten_by_later_evaluation(self):
+        saved = self.repository.get_scan(self.repository.save_scan(self.result))
+        idea = saved.ideas[0]
+        original = IdeaOutcome(idea.ticker, "stopped", -1.0, self.as_of, self.as_of, 1, idea.id)
+        self.repository.save_outcome(original)
+        self.repository.save_outcome(replace(original, status="target_2r", result_r=2.0))
+        self.assertEqual(self.repository.list_outcomes(), [original])
+
+    def test_nonfinite_position_values_are_rejected(self):
+        position = PortfolioPosition("AAA", "Alpha", "Technology", "XLK", 1, 100)
+        for invalid in (float("nan"), float("inf"), float("-inf")):
+            with self.assertRaises(ValueError):
+                self.repository.upsert_position(replace(position, shares=invalid))
+            with self.assertRaises(ValueError):
+                self.repository.upsert_position(replace(position, average_cost=invalid))
+            with self.assertRaises(ValueError):
+                self.repository.upsert_position(replace(position, fx_to_base=invalid))
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.repository = Repository(Path(self.temp.name) / "radar.db")
@@ -97,6 +115,10 @@ class RepositoryTest(unittest.TestCase):
             shares=12.5,
             average_cost=71.2,
             thesis="Durable AI platform adoption",
+            quote_currency="USD",
+            fx_to_base=0.86,
+            reference_price=150.0,
+            reference_source="Broker snapshot",
         )
 
         self.repository.upsert_position(position)
@@ -105,10 +127,19 @@ class RepositoryTest(unittest.TestCase):
         self.assertEqual(saved.ticker, "PLTR")
         self.assertEqual(saved.shares, 12.5)
         self.assertEqual(saved.average_cost, 71.2)
+        self.assertEqual(saved.fx_to_base, 0.86)
+        self.assertEqual(saved.reference_price, 150.0)
         self.assertEqual(self.repository.list_followed_members()[0].ticker, "PLTR")
 
         self.repository.remove_position("PLTR")
         self.assertEqual(self.repository.list_positions(), [])
+
+    def test_portfolio_settings_and_cash_round_trip(self):
+        self.repository.set_setting("portfolio_base_currency", "EUR")
+        self.repository.upsert_cash_balance(CashBalance("EUR", 125.50))
+
+        self.assertEqual(self.repository.get_setting("portfolio_base_currency", "USD"), "EUR")
+        self.assertEqual(self.repository.list_cash_balances()[0].amount, 125.50)
 
     def test_outcome_and_exports_use_saved_public_records(self):
         scan_id = self.repository.save_scan(self.result)

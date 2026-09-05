@@ -18,6 +18,7 @@ from market_radar.daily_intelligence import build_daily_intelligence
 from market_radar.exports import export_outcomes_json
 from market_radar.models import PortfolioPosition, UniverseMember
 from market_radar.pipeline import run_scan
+from market_radar.portfolio_view import SessionPortfolio, render_portfolio
 from market_radar.presentation import (
     QUADRANT_EXPLANATIONS,
     evidence_components,
@@ -235,7 +236,7 @@ professional_detail = st.sidebar.toggle(
 )
 st.sidebar.divider()
 if PUBLIC_DEMO:
-    st.sidebar.info("Public showcase · deterministic demo data · read-only")
+    st.sidebar.info("Public guest portfolios · market scanner uses synthetic demo data")
 else:
     if st.sidebar.button("Run demo scan", width="stretch"):
         save_scan(DemoProvider(), "Demo")
@@ -276,12 +277,17 @@ enriched = [signal for signal in scan.signals if signal.options_axis is not None
 ranked_signals = sorted(enriched, key=lambda signal: signal.evidence_score or 0, reverse=True)
 universe_lookup = {member.ticker: member for member in universe()}
 watchlist_entries = repo.list_watchlist()
-portfolio_positions = repo.list_positions()
+personal_repo = SessionPortfolio(st.session_state) if PUBLIC_DEMO else repo
+portfolio_positions = personal_repo.list_positions()
+portfolio_base_currency = personal_repo.get_setting("portfolio_base_currency", "USD").upper()
+cash_balances = personal_repo.list_cash_balances()
 daily_intelligence = build_daily_intelligence(
     scan,
     previous_scan,
     [item.ticker for item in watchlist_entries],
     portfolio_positions,
+    base_currency=portfolio_base_currency,
+    cash_balances=cash_balances,
 )
 upcoming_catalysts = load_catalysts(
     CATALYSTS_PATH,
@@ -314,25 +320,35 @@ def compact_dollars(value: float) -> str:
     return f"${value:,.0f}"
 
 
+def money(value: float, currency: str, decimals: int = 0, signed: bool = False) -> str:
+    symbols = {"EUR": "€", "USD": "$", "GBP": "£"}
+    symbol = symbols.get(currency.upper())
+    rendered = f"{value:+,.{decimals}f}" if signed else f"{value:,.{decimals}f}"
+    return f"{symbol}{rendered}" if symbol else f"{rendered} {currency.upper()}"
+
+
 st.markdown('<div class="radar-nav-spacer" aria-hidden="true"></div>', unsafe_allow_html=True)
 st.title("FolioShift")
 st.caption("What changed. What matters. · Personal portfolio intelligence after the close.")
-with st.popover("Menu", use_container_width=True):
-    view = st.radio(
-        "Sections",
-        PAGES,
-        key="active_dashboard_view",
-        format_func=PAGE_LABELS.get,
-        label_visibility="collapsed",
-    )
+view = st.selectbox(
+    "Menu",
+    PAGES,
+    index=5 if PUBLIC_DEMO or portfolio_positions else 0,
+    key="active_dashboard_view",
+    format_func=PAGE_LABELS.get,
+    help="Choose the part of FolioShift you want to view.",
+)
 st.caption(f"Current: {PAGE_LABELS[view]} · {PAGE_DESCRIPTIONS[view]}")
 
 mode_label = "SYNTHETIC DEMO DATA" if scan.provider == "demo" else "LIVE MARKET DATA"
+if view == "6 · Watchlist":
+    mode_label = "YOUR PORTFOLIO · SOURCES SHOWN PER HOLDING"
 st.markdown(f'<span class="radar-status">{mode_label}</span>', unsafe_allow_html=True)
-st.caption(
-    f"Viewing scan #{scan.id} · market session {scan.as_of.isoformat()} · {scan.status} · "
-    f"{scan.provider} / {scan.option_feed} options feed"
-)
+if view != "6 · Watchlist":
+    st.caption(
+        f"Viewing scan #{scan.id} · market session {scan.as_of.isoformat()} · {scan.status} · "
+        f"{scan.provider} / {scan.option_feed} options feed"
+    )
 with st.expander("New here? Read this 30-second guide"):
     st.markdown(
         """
@@ -650,34 +666,49 @@ def render_daily_changes():
 
 def render_personal_update(compact: bool = False):
     portfolio = daily_intelligence["portfolio"]
+    currency = portfolio["base_currency"]
     alerts = daily_intelligence["alerts"]
     if not portfolio["position_count"]:
         st.info("Add holdings in My Portfolio to turn this market brief into your personal after-close update.")
-        return
 
     metrics = st.columns(4)
     metrics[0].metric(
         "Portfolio value",
-        f"${portfolio['market_value']:,.0f}" if portfolio["market_value"] is not None else "Awaiting scan",
-        help="Saved closing prices × shares. This is not an intraday brokerage balance.",
+        money(portfolio["total_value"], currency) if portfolio["total_value"] is not None else "Awaiting scan",
+        help="Holdings plus saved cash, converted to your base currency. This is not an intraday brokerage balance.",
     )
     metrics[1].metric(
-        "Session P&L",
-        f"${portfolio['daily_pnl']:+,.0f}" if portfolio["daily_pnl"] is not None else "Need 2 scans",
+        "Change since prior scan",
+        money(portfolio["daily_pnl"], currency, signed=True)
+        if portfolio["daily_pnl"] is not None
+        else "Need 2 scans",
         delta=f"{portfolio['daily_return']:+.2%}" if portfolio["daily_return"] is not None else None,
     )
     metrics[2].metric(
         "Unrealized P&L",
-        f"${portfolio['unrealized_pnl']:+,.0f}" if portfolio["unrealized_pnl"] is not None else "Add cost basis",
+        money(portfolio["unrealized_pnl"], currency, signed=True)
+        if portfolio["unrealized_pnl"] is not None
+        else "Add cost basis",
         help="Uses the optional average cost you entered; it does not include fees or taxes.",
     )
     metrics[3].metric("Material changes", len(alerts), help=daily_intelligence["alert_policy"])
 
+    if portfolio["position_count"]:
+        holdings = money(portfolio["market_value"], currency) if portfolio["market_value"] is not None else "unavailable"
+        cash = money(portfolio["cash_value"], currency)
+        st.caption(
+            f"Invested {holdings} · cash {cash}. Change uses current share quantities at both saved closes; "
+            "trades, deposits, dividends, FX moves and fees are not included."
+        )
+    for warning in portfolio["coverage_warnings"]:
+        st.warning(warning)
     if alerts:
         st.markdown("**Worth your attention**")
         for alert in alerts[: 3 if compact else None]:
             icon = "●" if alert["severity"] == "high" else "○"
             st.write(f"{icon} **{alert['ticker']} · {alert['name']}** — {alert['reason']}.")
+    elif not daily_intelligence["comparison_complete"]:
+        st.info("Comparison data is incomplete. A quiet result cannot yet be confirmed for all followed companies.")
     else:
         st.success("No material followed-name change today. Quiet is a valid result; no action is suggested.")
     st.caption(daily_intelligence["alert_policy"])
@@ -1331,140 +1362,10 @@ elif view == "5 · Stock Explorer":
                     st.warning(warning)
 
 elif view == "6 · Watchlist":
-    st.subheader("My Portfolio")
-    if PUBLIC_DEMO:
-        st.caption(
-            "A sample portfolio demonstrates the personalized update. Holdings are fictional, read-only and never sent "
-            "to a broker. Your private local edition stores them only in its SQLite database."
-        )
-    else:
-        st.caption(
-            "Add shares and an optional average cost. FolioShift uses completed-session prices to explain daily changes; "
-            "it never connects to order entry."
-        )
-
-    render_personal_update()
-    with st.expander("How the daily update works"):
-        st.markdown(
-            "1. Add a holding or watchlist company.\n"
-            "2. The private scheduler runs after 17:15 America/New_York on completed trading days.\n"
-            "3. FolioShift saves the new closing-price, options and macro evidence, compares it with the prior scan, "
-            "and surfaces only material changes.\n"
-            "4. Every published trade idea stays frozen and is evaluated against later daily bars."
-        )
-        if PUBLIC_DEMO:
-            st.info("This hosted showcase uses synthetic data. Use the private edition with Alpaca credentials for fresh after-close data.")
-        elif os.getenv("ALPACA_API_KEY_ID") and os.getenv("ALPACA_API_SECRET_KEY"):
-            st.success("Live after-close data is configured. Keep the FolioShift service running for automatic updates.")
-        else:
-            st.warning("Automatic market updates are off. Add Alpaca credentials to `.env`, then restart `./start.sh`.")
-    portfolio = daily_intelligence["portfolio"]
-    if portfolio["positions"]:
-        st.markdown("#### Holdings")
-        holding_rows = []
-        for row in portfolio["positions"]:
-            holding_rows.append(
-                {
-                    "Ticker": row["ticker"],
-                    "Company": row["name"],
-                    "Shares": row["shares"],
-                    "Saved close": f"${row['current_price']:,.2f}" if row["current_price"] is not None else "Pending",
-                    "Market value": f"${row['market_value']:,.0f}" if row["market_value"] is not None else "Pending",
-                    "Session": f"{row['session_return']:+.2%}" if row["session_return"] is not None else "—",
-                    "Unrealized": f"${row['unrealized_pnl']:+,.0f}" if row["unrealized_pnl"] is not None else "—",
-                    "Setup": row["quadrant"] or "Price only",
-                    "Evidence": f"{row['evidence']:.1f}" if row["evidence"] is not None else "—",
-                }
-            )
-        st.dataframe(pd.DataFrame(holding_rows), hide_index=True, width="stretch")
-        if portfolio["sector_exposure"]:
-            exposure = pd.DataFrame(portfolio["sector_exposure"])
-            exposure["Weight"] = exposure["weight"].map(lambda value: f"{value:.1%}")
-            exposure["Value"] = exposure["market_value"].map(lambda value: f"${value:,.0f}")
-            with st.expander("Portfolio concentration"):
-                st.dataframe(
-                    exposure[["sector", "Weight", "Value"]].rename(columns={"sector": "Sector"}),
-                    hide_index=True,
-                    width="stretch",
-                )
-
-    st.markdown("#### Add or update a holding")
+    render_portfolio(repo, company_catalog(), public=PUBLIC_DEMO)
     catalog_entries = company_catalog()
-    position_tickers = {position.ticker for position in portfolio_positions}
-    with st.form("portfolio_company_search", clear_on_submit=False, border=False):
-        position_query = st.text_input(
-            "Find a portfolio company",
-            placeholder="Try Palantir, PLTR, Nu Bank, or NU",
-        )
-        st.form_submit_button("Search portfolio companies", type="primary", width="stretch")
-    position_matches = search_company_catalog(catalog_entries, position_query, limit=8)
-    selected_position_company = None
-    if position_query.strip() and not position_matches:
-        st.info(f'No company matched “{position_query.strip()}”. Try a ticker or shorter name.')
-    elif position_matches:
-        position_results = {
-            f"{entry.name} — {entry.ticker} · {entry.exchange}": entry for entry in position_matches
-        }
-        selected_position_label = st.radio("Portfolio search results", list(position_results), index=0)
-        selected_position_company = position_results[selected_position_label]
-
-    if selected_position_company:
-        existing_position = next(
-            (item for item in portfolio_positions if item.ticker == selected_position_company.ticker),
-            None,
-        )
-        with st.form("portfolio_position_editor", border=True):
-            st.markdown(f"**{selected_position_company.name} ({selected_position_company.ticker})**")
-            shares_column, cost_column = st.columns(2)
-            shares = shares_column.number_input(
-                "Shares",
-                min_value=0.0001,
-                value=float(existing_position.shares) if existing_position else 1.0,
-                step=1.0,
-            )
-            average_cost = cost_column.number_input(
-                "Average cost per share (optional)",
-                min_value=0.0,
-                value=float(existing_position.average_cost or 0.0) if existing_position else 0.0,
-                step=1.0,
-            )
-            thesis = st.text_input(
-                "Why do you own it? (optional)",
-                value=existing_position.thesis if existing_position else "",
-                placeholder="One sentence investment thesis",
-            )
-            if st.form_submit_button(
-                "Public demo · read only" if PUBLIC_DEMO else "Save holding",
-                type="primary",
-                width="stretch",
-                disabled=PUBLIC_DEMO,
-            ):
-                repo.upsert_position(
-                    PortfolioPosition(
-                        ticker=selected_position_company.ticker,
-                        name=selected_position_company.name,
-                        sector=selected_position_company.sector,
-                        sector_etf=selected_position_company.sector_etf,
-                        industry=selected_position_company.industry,
-                        shares=shares,
-                        average_cost=average_cost or None,
-                        thesis=thesis,
-                        created_at=existing_position.created_at if existing_position else None,
-                    )
-                )
-                st.success(f"Saved {selected_position_company.name} in your portfolio.")
-                st.rerun()
-
-    if portfolio_positions and not PUBLIC_DEMO:
-        position_lookup = {item.ticker: item for item in portfolio_positions}
-        remove_position_ticker = st.selectbox(
-            "Remove a holding",
-            list(position_lookup),
-            format_func=lambda symbol: f"{position_lookup[symbol].name} — {symbol}",
-        )
-        if st.button("Remove holding"):
-            repo.remove_position(remove_position_ticker)
-            st.rerun()
+    if PUBLIC_DEMO:
+        st.stop()
 
     st.divider()
     st.subheader("Watchlist")

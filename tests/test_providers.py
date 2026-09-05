@@ -36,6 +36,13 @@ class FakeOptionClient:
 
 
 class ProviderTest(unittest.TestCase):
+    def test_demo_prices_are_consistent_across_overlapping_windows(self):
+        provider = DemoProvider()
+        earlier = provider.get_daily_bars(["PLTR"], date(2026, 8, 1), date(2026, 8, 27))["PLTR"]
+        later = provider.get_daily_bars(["PLTR"], date(2026, 8, 20), date(2026, 8, 28))["PLTR"]
+        self.assertEqual([bar for bar in earlier if bar.session >= date(2026, 8, 20)], later[:-1])
+        self.assertNotEqual(later[-1].close, later[-2].close)
+
     def test_demo_provider_is_repeatable_and_has_valid_after_close_data(self):
         provider = DemoProvider()
         as_of = date(2026, 8, 28)

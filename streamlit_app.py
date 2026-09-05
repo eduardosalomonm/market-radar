@@ -1,4 +1,4 @@
-"""Safe public entry point for Streamlit Community Cloud."""
+"""Public guest portfolios and an explicitly synthetic market showcase."""
 
 import os
 import runpy
