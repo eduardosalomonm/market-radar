@@ -206,8 +206,12 @@ class DashboardTest(unittest.TestCase):
         sidebar_buttons = [item.label for item in app.sidebar.button]
         self.assertNotIn("Run demo scan", sidebar_buttons)
         self.assertNotIn("Run live Alpaca scan", sidebar_buttons)
+        self.assertTrue(any("EXAMPLE PORTFOLIO" in item.value for item in app.warning))
+        self.assertTrue(any(item.value == "EUR 62,384.71" for item in app.metric))
+        self.assertEqual(app.session_state["visitor_portfolio"]["positions"], [])
 
         self.navigation(app).set_value("6 · Watchlist").run()
+        next(item for item in app.radio if item.label == "Portfolio view").set_value("My own portfolio").run()
         next(item for item in app.text_input if item.label == "Find a portfolio company").set_value("Palantir")
         next(item for item in app.button if item.label == "Search portfolio companies").click().run()
 

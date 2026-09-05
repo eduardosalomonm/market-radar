@@ -14,6 +14,7 @@ import streamlit as st
 from .catalog import search_company_catalog
 from .models import CashBalance, PortfolioPosition
 from .portfolio_intelligence import earnings_exposure, market_report, refresh_intelligence
+from .portfolio_showcase import populate_showcase
 from .portfolio_tracker import export_portfolio, import_portfolio, portfolio_report, refresh_prices
 from .providers import AlpacaProvider
 
@@ -30,6 +31,7 @@ def insight_cards(items):
 
 def render_market_intelligence(repo, report, currency):
     evidence = repo.cache_get("portfolio_market_evidence") or {}
+    synthetic = repo.get_setting("synthetic_showcase", "0") == "1"
     market = market_report(report, evidence)
     st.markdown("#### What markets say about your portfolio")
     st.caption("Market evidence—not an expected-growth forecast. Requires real data and valuation dates matching the evidence session.")
@@ -42,6 +44,9 @@ def render_market_intelligence(repo, report, currency):
     except (ValueError, TypeError):
         records = []
     events = earnings_exposure(report["rows"], records, datetime.now().date())
+    if synthetic:
+        events = repo.cache_get("synthetic_earnings")
+        st.warning("SYNTHETIC ANALYSIS · Prices, options, histories and earnings dates below are invented examples—not market forecasts.")
     with st.expander("Market signals" if evidence else "Market signals · connect a data feed", expanded=bool(evidence)):
         insight_cards([
         ("Biggest risk contributor", risk_leader["ticker"] if risk_leader else "Unavailable",
@@ -53,7 +58,7 @@ def render_market_intelligence(repo, report, currency):
         ("Highest protection premium", f"{skew_leader['skew_points']:+.1f} vol pts" if skew_leader else "Unavailable",
          f"{skew_leader['ticker']} · 25-delta put IV minus call IV" if skew_leader else "Needs comparable put and call quotes", "purple"),
         ("Earnings · next 30 days", f"{events['weight30']:.0%} of portfolio" if events["coverage"] else "Unavailable",
-         f"Verified calendar coverage: {events['coverage']:.0%} · known events only", "amber"),
+         f"{'Simulated' if synthetic else 'Verified'} calendar coverage: {events['coverage']:.0%} · known events only", "amber"),
         ("Portfolio movement · 30 days", f"{currency} ±{market['hybrid_move']:,.0f}" if market["hybrid_move"] is not None else "Unavailable",
          "Hybrid: options IV + historical correlations · fixed FX", "rose"),
         ])
@@ -80,6 +85,10 @@ def render_market_intelligence(repo, report, currency):
                           for t, s in evidence.get("symbols", {}).items() if t in {r["ticker"] for r in report["rows"]}]
             st.dataframe(pd.DataFrame(exclusions), hide_index=True)
             st.download_button("Download market evidence", json.dumps(evidence, indent=2), "portfolio-market-evidence.json", "application/json")
+    if synthetic:
+        with st.expander("Simulated earnings calendar · fictional dates"):
+            st.dataframe(pd.DataFrame(events["events"]), hide_index=True)
+        return
     with st.expander("Verified earnings calendar"):
         st.caption("No earnings feed is connected. Import reviewed records with a source URL, verification date and coverage period. Uncovered companies remain unknown.")
         for event in events["events"]:
@@ -159,19 +168,29 @@ def credential(key):
 @st.fragment(run_every="15m")
 def render_portfolio(repository, catalog, public=False):
     repo = SessionPortfolio(st.session_state) if public else repository
+    synthetic = False
+    if public:
+        mode = st.radio("Portfolio view", ["Example portfolio", "My own portfolio"], horizontal=True, key="portfolio_mode")
+        synthetic = mode == "Example portfolio"
+        if synthetic:
+            # A separate throwaway store cannot seed or overwrite visitor holdings.
+            repo = SessionPortfolio({})
+            populate_showcase(repo)
+            st.warning("EXAMPLE PORTFOLIO · €62,384.71 · Entirely synthetic. These are not anyone's real holdings or current market prices.")
+            st.caption("Explore a fully worked example, or select My own portfolio to start with an empty private guest workspace.")
     positions, cash = repo.list_positions(), repo.list_cash_balances()
     currency = repo.get_setting("portfolio_base_currency", "USD")
     def fmt(value):
         return f"{currency} {value:,.2f}" if value is not None else "Unavailable"
     st.markdown("#### Privacy & prices")
-    if public:
+    if public and not synthetic:
         st.info("Private guest session · Not saved after reload. Download a backup before leaving. Accounts are not enabled yet.")
-    else:
+    elif not synthetic:
         st.caption("Your holdings are saved on this computer. Values below use broker references or real completed market closes.")
 
     configured = bool(credential("ALPACA_API_KEY_ID") and credential("ALPACA_API_SECRET_KEY"))
     public_feed = credential("MARKET_RADAR_PUBLIC_DATA_LICENSED") == "1"
-    can_refresh = configured and (not public or public_feed)
+    can_refresh = configured and (not public or public_feed) and not synthetic
     cached = repo.cache_get("portfolio_closes") or {}
     if can_refresh and positions:
         last_attempt = st.session_state.get("portfolio_refresh_attempt", 0)
@@ -188,12 +207,12 @@ def render_portfolio(repository, catalog, public=False):
             except Exception:
                 st.warning("Market evidence refresh unavailable. Last saved evidence is retained.")
         st.caption(f"After-close data · last check: {cached.get('checked_at', 'pending')} · IEX US stocks · FX rates entered manually")
-    else:
+    elif not synthetic:
         st.info("Daily market updates are awaiting data-feed setup. Your saved broker values are available below.")
     if cached.get("errors"):
         st.warning("Could not refresh: " + ", ".join(cached["errors"]) + ". Saved references remain available.")
     if cached.get("session"):
-        st.caption(f"Daily comparison ends at market session {cached['session']}. This is the latest successfully checked session.")
+        st.caption(f"{'Fixed synthetic example date' if synthetic else 'Latest checked market session'}: {cached['session']}.")
     if any(p.reference_price is not None and p.reference_price_at is None for p in positions):
         st.warning("Some broker prices have an unknown date. Confirm their date in the holding editor before enabling automatic replacement by market closes.")
 
@@ -282,6 +301,9 @@ def render_portfolio(repository, catalog, public=False):
         if any("screenshot" in p.reference_source.lower() for p in positions):
             st.caption("Screenshot gain percentages are not a verified purchase cost. Confirm broker cost basis before using gain estimates for a sale or tax decision.")
 
+    if synthetic:
+        st.info("Want to analyze your holdings? Select My own portfolio at the top. The example never copies into your personal workspace.")
+        return
     with st.expander("Cash and reporting currency"):
         st.caption("Reporting currency is fixed once holdings exist, so saved values cannot silently change currency.")
         with st.form("tracker_cash"):
