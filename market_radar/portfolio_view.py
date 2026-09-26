@@ -4,7 +4,7 @@ import json
 import os
 import time
 from dataclasses import replace
-from datetime import datetime
+from datetime import datetime, timedelta
 from html import escape
 
 import pandas as pd
@@ -13,8 +13,20 @@ import streamlit as st
 
 from .catalog import search_company_catalog
 from .models import CashBalance, PortfolioPosition
+from .portfolio_decisions import contribution_scenario, review_priority
 from .portfolio_intelligence import earnings_exposure, market_report, refresh_intelligence
-from .portfolio_showcase import populate_showcase
+from .portfolio_journal import (
+    ACTIONS,
+    VERDICTS,
+    add_review,
+    dump_journal,
+    import_journal,
+    load_journal,
+    merge_journal,
+    record_decision,
+    review_journal,
+)
+from .portfolio_showcase import SESSION, populate_showcase
 from .portfolio_tracker import export_portfolio, import_portfolio, portfolio_report, refresh_prices
 from .providers import AlpacaProvider
 
@@ -27,6 +39,63 @@ def insight_cards(items):
         for label, value, note, tone in items
     )
     st.markdown(f'<div class="folio-grid">{cards}</div>', unsafe_allow_html=True)
+
+
+def render_decision_journal(repo, report, journal, today, synthetic):
+    st.markdown("#### Decision journal")
+    st.caption("Write down what you decided, why, and what would change your mind. On the review date FolioShift shows what "
+               "happened since. The original entry is never edited, so you can learn from your own track record.")
+    if synthetic:
+        st.caption(f"Example decisions are fictional and reviewed as of the fixed example date, {today.isoformat()}.")
+    entries = load_journal(repo.get_setting("decision_journal", "[]"))
+    for item in journal[:12]:
+        with st.container(border=True):
+            status = "Review due" if item["due"] else (f"Review in {item['days']} days" if item["days"] > 0 else "Reviewed")
+            st.markdown(f"**{item['ticker']} · {item['action']}** · decided {item['decided_on']} · {status}")
+            st.write(item["reason"])
+            if item["reconsider_if"]:
+                st.caption("I'd reconsider if: " + item["reconsider_if"])
+            change = item["price_change"]
+            weight_then = f"{item['weight']:.1%}" if item["weight"] is not None else "—"
+            weight_now = f"{item['weight_now']:.1%}" if item["weight_now"] is not None else ("Not held" if not item["held"] else "—")
+            insight_cards([
+                ("Price since decision", f"{change:+.1%}" if change is not None else "No newer price",
+                 f"{item['currency']} {item['price']:,.2f} ({item['price_as_of']}) → {item['price_now_as_of']}"
+                 if change is not None else "Needs a price dated after the decision", "rose" if change is not None and change < 0 else "teal"),
+                ("Portfolio weight · then → now", f"{weight_then} → {weight_now}", "Capital share, not performance", "purple"),
+            ])
+            if item["reviews"]:
+                last = item["reviews"][-1]
+                st.caption(f"Last review {last['on']}: {last['verdict']}" + (f" — {last['note']}" if last["note"] else ""))
+            if item["due"] and not synthetic:
+                with st.form(f"review_{item['id']}", clear_on_submit=True):
+                    verdict = st.radio("Looking back, your reasoning is…", VERDICTS, horizontal=True)
+                    note = st.text_input("What did you learn? (optional)", max_chars=500)
+                    if st.form_submit_button("Save review"):
+                        repo.set_setting("decision_journal", dump_journal(
+                            [add_review(e, verdict, note, today) if e["id"] == item["id"] else e for e in entries]))
+                        st.rerun()
+    if synthetic:
+        st.info("Select My own portfolio to keep a journal for your holdings. Guest entries are included in the portfolio backup.")
+        return
+    if not report["rows"]:
+        return
+    with st.expander("Record a decision", expanded=not journal):
+        with st.form("record_decision", clear_on_submit=True):
+            ticker = st.selectbox("Holding", [r["ticker"] for r in report["rows"]])
+            action = st.radio("Decision", ACTIONS, horizontal=True)
+            reason = st.text_area("Why?", max_chars=500, placeholder="The evidence behind this decision, in one or two sentences.")
+            trigger = st.text_input("I'd reconsider if…", max_chars=500, placeholder="A measurable signal, e.g. two quarters of falling margins.")
+            review_on = st.date_input("Review on", today + timedelta(days=90), min_value=today + timedelta(days=1),
+                                      max_value=today + timedelta(days=730))
+            st.caption("Saves today's price, price date and portfolio weight as a snapshot. Nothing is traded.")
+            if st.form_submit_button("Save decision"):
+                try:
+                    entry = record_decision(report, ticker, action, reason, trigger, review_on, today)
+                    repo.set_setting("decision_journal", dump_journal(entries + [entry]))
+                    st.rerun()
+                except ValueError as exc:
+                    st.error(str(exc))
 
 
 def render_market_intelligence(repo, report, currency):
@@ -221,6 +290,14 @@ def render_portfolio(repository, catalog, public=False):
                           help="Your concentration threshold—not an automatic sell instruction.")
     repo.set_setting("position_limit", str(limit))
     report = portfolio_report(positions, cash, currency, cached, limit / 100)
+    # The example is reviewed at its fixed session so its story does not drift with the calendar.
+    today = SESSION if synthetic else datetime.now().date()
+    journal = review_journal(load_journal(repo.get_setting("decision_journal", "[]")), report, today)
+    if positions:
+        title, reason = review_priority(report, today, limit / 100, synthetic, [e["ticker"] for e in journal if e["due"]])
+        with st.container(border=True):
+            st.markdown(f"#### Your next review · {title}")
+            st.write(reason)
     st.markdown("#### At a glance")
     if not positions:
         st.info("Start with one holding: search a company below, enter your shares, then save. Or restore a portfolio backup.")
@@ -270,6 +347,32 @@ def render_portfolio(repository, catalog, public=False):
                 st.markdown(f"**{action['title']}**")
                 st.write(action["why"])
                 st.write(action["action"])
+        st.markdown("#### Before you add more")
+        st.caption("Compare an extra contribution without changing your holdings.")
+        if report["complete"] and report["total"] > 0:
+            with st.container(border=True):
+                amount = st.number_input(f"New contribution ({currency})", min_value=0.0, max_value=1e9, value=1000.0, step=100.0,
+                                         key=f"contribution_{'example' if synthetic else 'personal'}")
+                destination = st.selectbox("Contribution destination", ["Cash"] + [r["ticker"] for r in report["rows"]],
+                                           key=f"destination_{'example' if synthetic else 'personal'}")
+                scenario = contribution_scenario(report, amount, destination, limit / 100)
+                insight_cards([
+                    ("Largest position · before → after", f"{scenario['largest_before']:.1%} → {scenario['largest_after']:.1%}",
+                     "Capital concentration, not a risk forecast", "blue"),
+                    ("Positions above your limit", f"{scenario['breaches_before']} → {scenario['breaches_after']}",
+                     f"Your review threshold: {limit}%", "amber"),
+                    ("Cash needed to reach your limit" if destination == "Cash" else f"Room in {destination} before your limit",
+                     fmt(scenario["room"]), "At saved values, before this contribution", "teal"),
+                ])
+                st.caption(f"Cash share: {scenario['cash_before']:.1%} → {scenario['cash_after']:.1%}. Assumes unchanged prices/FX, no fees or taxes. No orders or holdings changes are made.")
+                with st.expander("See every allocation change"):
+                    table = pd.DataFrame(scenario["rows"])
+                    st.dataframe(table.style.format({"Before": "{:.1%}", "After": "{:.1%}", "Change (pp)": "{:+.2f}"}), hide_index=True)
+                    st.download_button("Download contribution scenario", json.dumps({"synthetic": synthetic, "currency": currency,
+                        "contribution": amount, "destination": destination, "result": scenario}, indent=2), "contribution-scenario.json", "application/json")
+        else:
+            st.info("Complete the missing holding values to compare contributions.")
+        render_decision_journal(repo, report, journal, today, synthetic)
         render_market_intelligence(repo, report, currency)
         st.markdown("#### Allocation map")
         valued = [r for r in report["rows"] if r["value"] is not None and r["value"] > 0]
@@ -358,14 +461,15 @@ def render_portfolio(repository, catalog, public=False):
                     st.error(str(exc))
     st.markdown("#### Backup & restore")
     with st.expander("Import or back up your portfolio", expanded=not positions):
-        st.caption("JSON import merges holdings by ticker after validating the full file. Backups contain your financial data; keep them private.")
-        st.download_button("Download portfolio backup", export_portfolio(positions, cash, currency), "my-portfolio.json", "application/json")
+        st.caption("JSON import merges holdings by ticker and journal entries by ID after validating the full file. Backups contain your financial data and decisions; keep them private.")
+        st.download_button("Download portfolio backup", export_portfolio(positions, cash, currency, load_journal(repo.get_setting("decision_journal", "[]"))), "my-portfolio.json", "application/json")
         sample = PortfolioPosition("AAPL", "Apple", "Information Technology", "XLK", 1, quote_currency=currency)
         st.download_button("Download import example", export_portfolio([sample], [], currency), "portfolio-example.json", "application/json")
         uploaded = st.file_uploader("Import portfolio JSON", type=["json"])
         if uploaded and st.button("Validate and import"):
             try:
                 imported, balances, base = import_portfolio(uploaded.getvalue())
+                decisions = import_journal(uploaded.getvalue())
                 if (positions or cash) and base != currency:
                     raise ValueError("Import must match your current reporting currency")
                 if len({p.ticker for p in positions + imported}) > 100:
@@ -375,6 +479,9 @@ def render_portfolio(repository, catalog, public=False):
                 for c in balances:
                     repo.upsert_cash_balance(c)
                 repo.set_setting("portfolio_base_currency", base)
+                if decisions:
+                    repo.set_setting("decision_journal", dump_journal(merge_journal(
+                        load_journal(repo.get_setting("decision_journal", "[]")), decisions)))
                 st.rerun()
             except ValueError as exc:
                 st.error(str(exc))

@@ -23,12 +23,15 @@ def number(value, label, minimum=0):
     return value
 
 
-def export_portfolio(positions, cash, currency):
-    return json.dumps({
+def export_portfolio(positions, cash, currency, journal=None):
+    data = {
         "version": 1, "base_currency": currency,
         "positions": [asdict(p) for p in positions],
         "cash": [asdict(c) for c in cash],
-    }, default=lambda value: value.isoformat(), indent=2, allow_nan=False)
+    }
+    if journal:
+        data["journal"] = journal
+    return json.dumps(data, default=lambda value: value.isoformat(), indent=2, allow_nan=False)
 
 
 def import_portfolio(raw):

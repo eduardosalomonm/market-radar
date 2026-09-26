@@ -210,6 +210,15 @@ class DashboardTest(unittest.TestCase):
         self.assertTrue(any(item.value == "EUR 62,384.71" for item in app.metric))
         self.assertEqual(app.session_state["visitor_portfolio"]["positions"], [])
 
+        next(item for item in app.number_input if item.label == "New contribution (EUR)").set_value(5000.0).run()
+        self.assertEqual(app.exception, [])
+        self.assertTrue(any(item.value == "EUR 62,384.71" for item in app.metric))
+        self.assertEqual(app.session_state["visitor_portfolio"]["positions"], [])
+        self.assertTrue(any("Illustrative review" in item.value for item in app.markdown))
+        self.assertTrue(any("Cash needed to reach your limit" in item.value for item in app.markdown))
+        self.assertTrue(any("NVDA · Hold" in item.value and "Review due" in item.value for item in app.markdown))
+        self.assertNotIn("Save review", [item.label for item in app.button])
+
         self.navigation(app).set_value("6 · Watchlist").run()
         next(item for item in app.radio if item.label == "Portfolio view").set_value("My own portfolio").run()
         next(item for item in app.text_input if item.label == "Find a portfolio company").set_value("Palantir")
@@ -221,6 +230,13 @@ class DashboardTest(unittest.TestCase):
         self.assertEqual(app.exception, [])
         self.assertEqual(app.session_state["visitor_portfolio"]["positions"][0].shares, 7.0)
         self.assertEqual(Repository(self.database).list_positions(), shared_before)
+
+        next(item for item in app.text_area if item.label == "Why?").set_value("Government contracts keep growing")
+        next(item for item in app.button if item.label == "Save decision").click().run()
+        self.assertEqual(app.exception, [])
+        self.assertIn('"ticker": "PLTR"', app.session_state["visitor_portfolio"]["decision_journal"])
+        self.assertEqual(Repository(self.database).get_setting("decision_journal", "[]"), "[]")
+        self.assertTrue(any("PLTR · Hold" in item.value for item in app.markdown))
         other = AppTest.from_file(str(app_path), default_timeout=10).run()
         self.assertEqual(other.session_state["visitor_portfolio"]["positions"], [])
 

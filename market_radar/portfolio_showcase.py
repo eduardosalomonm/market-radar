@@ -1,5 +1,6 @@
 """Fixed fictional public example. Never derived from a user's portfolio."""
 
+import json
 import math
 from datetime import date, datetime, timedelta
 
@@ -11,6 +12,14 @@ from .portfolio_intelligence import VERSION, option_evidence
 
 SESSION = date(2026, 9, 4)
 TOTAL = 62384.71
+
+# Fictional decisions: action, business days before SESSION, review date, reason, reconsider trigger.
+JOURNAL = {
+    "NVDA": ("Hold", 65, date(2026, 9, 1), "Example: data-center demand still outpacing supply.",
+             "Example: two quarters of slowing data-center revenue, or weight above 30%."),
+    "COST": ("Add", 15, date(2026, 11, 13), "Example: steady membership renewals; adding with new contributions only.",
+             "Example: renewal rate falls below 90%."),
+}
 
 
 def populate_showcase(repo):
@@ -27,7 +36,7 @@ def populate_showcase(repo):
         ("JNJ", "Johnson & Johnson", "Health Care", "XLV", 3000, .20),
         ("DIS", "Walt Disney", "Communication Services", "XLC", 2500, .36),
     ]
-    symbols, closes = {}, {}
+    symbols, closes, journal = {}, {}, []
     for index, (ticker, name, sector, etf, value, iv) in enumerate(specs):
         returns = common * (.7 + index / 15) + rng.normal(.0002, iv / math.sqrt(252) * .65, len(days))
         returns[-1] = [.018, .007, -.004, .003, .002, -.011, .001, -.006][index]
@@ -39,6 +48,13 @@ def populate_showcase(repo):
                              reference_value_base=value, reference_price_at=datetime(2026, 9, 4),
                              reference_source="Synthetic showcase — fictional prices and holdings",
                              thesis="Example thesis: review business execution, valuation and concentration."))
+        if ticker in JOURNAL:
+            action, back, review, reason, trigger = JOURNAL[ticker]
+            then = float(history[-1 - back])
+            journal.append({"id": f"{index:02x}", "ticker": ticker, "action": action, "reason": reason, "reconsider_if": trigger,
+                            "decided_on": days[-1 - back].date().isoformat(), "review_on": review.isoformat(),
+                            "price": then, "price_as_of": days[-1 - back].date().isoformat(), "currency": "USD",
+                            "weight": value * then / price / TOTAL, "reviews": []})
         raw = [{"symbol": f"SYNTHETIC-{ticker}-{kind}-{delta}", "type": kind,
                 "expiration": (SESSION + timedelta(days=30)).isoformat(), "strike": price,
                 "iv": vol, "delta": delta, "bid": 2, "ask": 2.1, "quote_at": "2026-09-04T19:59:00Z"}
@@ -51,6 +67,7 @@ def populate_showcase(repo):
                           "previous_as_of": days[-2].date().isoformat(), "currency": "USD", "source": "Synthetic showcase"}
     repo.set_setting("portfolio_base_currency", "EUR")
     repo.set_setting("synthetic_showcase", "1")
+    repo.set_setting("decision_journal", json.dumps(journal))
     repo.upsert_cash_balance(CashBalance("EUR", TOTAL - sum(s[4] for s in specs)))
     repo.cache_put("portfolio_closes", {"session": SESSION.isoformat(), "symbols": closes, "errors": [], "synthetic": True})
     repo.cache_put("portfolio_market_evidence", {"symbols": symbols, "session": SESSION.isoformat(),
