@@ -111,7 +111,7 @@ class CliSchedulerTest(unittest.TestCase):
 
         command = call.call_args.args[0]
         self.assertEqual(exit_code, 0)
-        self.assertEqual(call.call_args.kwargs["cwd"].name, "market-radar")
+        self.assertTrue((call.call_args.kwargs["cwd"] / ".streamlit" / "config.toml").is_file())
         self.assertIn("--server.port", command)
         self.assertEqual(command[command.index("--server.port") + 1], "8502")
         self.assertEqual(call.call_args.kwargs["env"]["MARKET_RADAR_DATABASE"], str(self.database.resolve()))
