@@ -240,6 +240,30 @@ class DashboardTest(unittest.TestCase):
         other = AppTest.from_file(str(app_path), default_timeout=10).run()
         self.assertEqual(other.session_state["visitor_portfolio"]["positions"], [])
 
+    def test_public_daily_brief_leads_with_the_example_portfolio_on_its_fixed_session(self):
+        os.environ["MARKET_RADAR_PUBLIC_DEMO"] = "1"
+        st.cache_resource.clear()
+        app_path = Path(__file__).parents[1] / "market_radar" / "dashboard.py"
+        app = AppTest.from_file(str(app_path), default_timeout=10).run()
+        self.navigation(app).set_value("1 · Executive Brief").run()
+
+        self.assertEqual(app.exception, [])
+        subheaders = [item.value for item in app.subheader]
+        self.assertLess(subheaders.index("Your portfolio today"), subheaders.index("The market backdrop"))
+        self.assertTrue(any("fixed session 2026-09-04" in item.value for item in app.warning))
+        self.assertTrue(any(item.label == "Portfolio value" and item.value == "€62,384.71" for item in app.metric))
+        self.assertTrue(any(item.label == "Decisions due for review" and item.value == "1" for item in app.metric))
+        self.assertTrue(any("market session 2026-09-04" in item.value for item in app.caption))
+        rendered_text = " ".join(item.value for item in app.markdown)
+        self.assertIn("**NVDA** is 28.9% of the portfolio", rendered_text)
+        self.assertNotIn("No verified catalyst is configured", " ".join(item.value for item in app.info))
+
+        self.navigation(app).set_value("6 · Watchlist").run()
+        next(item for item in app.radio if item.label == "Portfolio view").set_value("My own portfolio").run()
+        self.navigation(app).set_value("1 · Executive Brief").run()
+        self.assertEqual(app.exception, [])
+        self.assertTrue(any("Add holdings in My Portfolio" in item.value for item in app.info))
+
 
 if __name__ == "__main__":
     unittest.main()

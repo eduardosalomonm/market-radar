@@ -41,6 +41,28 @@ def insight_cards(items):
     st.markdown(f'<div class="folio-grid">{cards}</div>', unsafe_allow_html=True)
 
 
+def example_brief(limit=.25):
+    """Daily Brief summary of the fixed synthetic example, built from the same calculations as My Portfolio."""
+    repo = SessionPortfolio({})
+    populate_showcase(repo)
+    currency = repo.get_setting("portfolio_base_currency", "USD")
+    report = portfolio_report(repo.list_positions(), repo.list_cash_balances(), currency,
+                              repo.cache_get("portfolio_closes"), limit)
+    journal = review_journal(load_journal(repo.get_setting("decision_journal", "[]")), report, SESSION)
+    movers = sorted((r for r in report["rows"] if r["daily_change"] is not None),
+                    key=lambda r: abs(r["daily_change"]), reverse=True)
+    previous = report["total"] - report["daily"] if report["daily"] is not None else None
+    largest = report["rows"][0]
+    return {
+        "session": SESSION, "currency": currency, "total": report["total"], "cash": report["cash"],
+        "daily": report["daily"], "daily_return": report["daily"] / previous if previous else None,
+        "largest": {"ticker": largest["ticker"], "weight": largest["weight"]}, "limit": limit,
+        "over_limit": report["diagnostics"]["over_limit"],
+        "movers": [{"ticker": r["ticker"], "name": r["name"], "change": r["daily_change"]} for r in movers[:3]],
+        "due": [{"ticker": e["ticker"], "action": e["action"], "decided_on": e["decided_on"]} for e in journal if e["due"]],
+    }
+
+
 def render_decision_journal(repo, report, journal, today, synthetic):
     st.markdown("#### Decision journal")
     st.caption("Write down what you decided, why, and what would change your mind. On the review date FolioShift shows what "
@@ -249,8 +271,8 @@ def render_portfolio(repository, catalog, public=False):
             st.caption("Explore a fully worked example, or select My own portfolio to start with an empty private guest workspace.")
     positions, cash = repo.list_positions(), repo.list_cash_balances()
     currency = repo.get_setting("portfolio_base_currency", "USD")
-    def fmt(value):
-        return f"{currency} {value:,.2f}" if value is not None else "Unavailable"
+    def fmt(value, signed=False):
+        return f"{currency} {value:{'+' if signed else ''},.2f}" if value is not None else "Unavailable"
     st.markdown("#### Privacy & prices")
     if public and not synthetic:
         st.info("Private guest session · Not saved after reload. Download a backup before leaving. Accounts are not enabled yet.")
@@ -303,7 +325,7 @@ def render_portfolio(repository, catalog, public=False):
         st.info("Start with one holding: search a company below, enter your shares, then save. Or restore a portfolio backup.")
     columns = st.columns(3)
     columns[0].metric("Portfolio value" if report["complete"] else "Known portfolio value", fmt(report["total"]))
-    columns[1].metric("Last session change", fmt(report["daily"]))
+    columns[1].metric("Last session change", fmt(report["daily"], signed=True))
     columns[2].metric("Cash", fmt(report["cash"]))
     st.caption(f"Comparable daily prices: {report['daily_coverage']}/{len(positions)} holdings. Daily change holds shares and FX fixed; deposits, trades, dividends and fees are excluded.")
     if positions:

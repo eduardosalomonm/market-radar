@@ -18,7 +18,8 @@ from market_radar.daily_intelligence import build_daily_intelligence
 from market_radar.exports import export_outcomes_json
 from market_radar.models import PortfolioPosition, UniverseMember
 from market_radar.pipeline import run_scan
-from market_radar.portfolio_view import SessionPortfolio, render_portfolio
+from market_radar.portfolio_showcase import showcase_sessions
+from market_radar.portfolio_view import SessionPortfolio, example_brief, render_portfolio
 from market_radar.presentation import (
     QUADRANT_EXPLANATIONS,
     evidence_components,
@@ -216,23 +217,14 @@ def bootstrap_public_demo():
                     )
                 )
 
+    # Pinned to the example portfolio's date: the brief, portfolio and catalyst calendar describe the same session.
     provider = DemoProvider()
-    existing = repo.latest_scan()
-    if existing:
-        if existing.provider == "demo" and repo.previous_scan(existing.id) is None:
-            previous_session = existing.as_of - timedelta(days=1)
-            while previous_session.weekday() >= 5:
-                previous_session -= timedelta(days=1)
-            repo.save_scan(run_scan(provider, universe(), previous_session, scan_type="public-demo"))
-        return existing.id
-
-    session = provider.latest_completed_session(datetime.now(NEW_YORK))
-    previous_session = session - timedelta(days=1)
-    while previous_session.weekday() >= 5:
-        previous_session -= timedelta(days=1)
+    previous_session, session = showcase_sessions()
+    for row in repo.list_scans():
+        if row["provider"] == "demo" and row["as_of"] == session.isoformat() and repo.previous_scan(row["id"]):
+            return row["id"]
     repo.save_scan(run_scan(provider, universe(), previous_session, scan_type="public-demo"))
-    result = run_scan(provider, universe(), session, scan_type="public-demo")
-    return repo.save_scan(result)
+    return repo.save_scan(run_scan(provider, universe(), session, scan_type="public-demo"))
 
 
 def save_scan(provider, label):
@@ -268,7 +260,7 @@ else:
 
 if PUBLIC_DEMO:
     with st.spinner("Preparing the public market showcase…"):
-        bootstrap_public_demo()
+        st.session_state.setdefault("selected_scan_id", bootstrap_public_demo())
 
 scan_rows = repo.list_scans()
 if not scan_rows:
@@ -728,6 +720,48 @@ def render_personal_update(compact: bool = False):
             st.write(f"• {note}")
 
 
+def render_example_update():
+    """Public visitors land on the synthetic example; the brief must describe that portfolio, not an empty one."""
+    example = example_brief()
+    currency = example["currency"]
+    st.warning(
+        f"EXAMPLE PORTFOLIO · fixed session {example['session'].isoformat()} · Entirely synthetic. "
+        "Select My own portfolio in My Portfolio to analyze your holdings."
+    )
+    metrics = st.columns(4)
+    metrics[0].metric("Portfolio value", money(example["total"], currency, 2))
+    metrics[1].metric(
+        "Last session change",
+        money(example["daily"], currency, 2, signed=True) if example["daily"] is not None else "Unavailable",
+        delta=f"{example['daily_return']:+.2%}" if example["daily_return"] is not None else None,
+    )
+    largest = example["largest"]
+    metrics[2].metric(
+        "Largest position",
+        f"{largest['ticker']} · {largest['weight']:.1%}",
+        help="Share of portfolio value, compared with a 25% review limit.",
+    )
+    metrics[3].metric("Decisions due for review", len(example["due"]))
+    st.markdown("**Worth your attention**")
+    if example["over_limit"]:
+        st.write(
+            f"● **{largest['ticker']}** is {largest['weight']:.1%} of the portfolio, above the "
+            f"{example['limit']:.0%} review limit. My Portfolio compares adding new money elsewhere with reducing it."
+        )
+    for item in example["due"]:
+        st.write(
+            f"● **{item['ticker']}** · your {item['action'].lower()} decision from {item['decided_on']} "
+            "reached its review date. The Decision journal shows what changed since."
+        )
+    if example["movers"]:
+        moved = " · ".join(f"{m['ticker']} {money(m['change'], currency, signed=True)}" for m in example["movers"])
+        st.write(f"○ Biggest moves last session: {moved}")
+    st.caption(
+        "Change holds shares and FX fixed. Review points describe concentration and your own saved decisions; "
+        "they are not buy or sell recommendations."
+    )
+
+
 def render_catalyst_rail(limit: int = 6):
     if not upcoming_catalysts:
         st.info("No verified catalyst is configured in the next 35 days.")
@@ -791,6 +825,13 @@ if view == "1 · Executive Brief":
         """,
         unsafe_allow_html=True,
     )
+    st.subheader("Your portfolio today")
+    if PUBLIC_DEMO and st.session_state.get("portfolio_mode", "Example portfolio") == "Example portfolio":
+        render_example_update()
+    else:
+        render_personal_update(compact=True)
+
+    st.subheader("The market backdrop")
     headline_metrics = st.columns(4)
     headline_metrics[0].metric(
         "U.S. market trend",
@@ -811,9 +852,6 @@ if view == "1 · Executive Brief":
         mime="application/pdf",
         help="A dated executive brief built only from saved deterministic evidence and verified catalyst dates.",
     )
-
-    st.subheader("Your portfolio today")
-    render_personal_update(compact=True)
 
     story, risk = st.columns([1.35, 0.65])
     with story:

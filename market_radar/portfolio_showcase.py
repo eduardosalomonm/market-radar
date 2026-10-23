@@ -22,6 +22,14 @@ JOURNAL = {
 }
 
 
+def showcase_sessions():
+    """Prior and current market sessions for the public scan, pinned to the example date so every page agrees."""
+    previous = SESSION - timedelta(days=1)
+    while previous.weekday() >= 5:
+        previous -= timedelta(days=1)
+    return previous, SESSION
+
+
 def populate_showcase(repo):
     rng = np.random.default_rng(62384)
     days = pd.bdate_range(end=SESSION, periods=260)
