@@ -17,11 +17,6 @@ class CompanyCatalogEntry:
     aliases: tuple[str, ...] = ()
     source: str = ""
 
-    @property
-    def search_label(self) -> str:
-        alias = f" ({', '.join(self.aliases)})" if self.aliases else ""
-        return f"{self.name}{alias} — {self.ticker} · {self.exchange}"
-
 
 def _aliases(value: str) -> tuple[str, ...]:
     return tuple(item.strip() for item in value.split(";") if item.strip())

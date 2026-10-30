@@ -4,7 +4,15 @@ from test_pipeline import FakeProvider
 from test_pipeline import PipelineTest as _PipelineFixture
 
 from market_radar.pipeline import run_scan
-from market_radar.presentation import evidence_components, executive_brief, recommendation_reason
+from market_radar.presentation import evidence_components, executive_brief, money, recommendation_reason
+
+
+def test_money_puts_the_sign_before_the_currency_symbol():
+    assert money(342.03, "EUR", 2, signed=True) == "+€342.03"
+    assert money(-44.4, "EUR", signed=True) == "-€44"
+    assert money(-1250.5, "USD", 2) == "-$1,250.50"
+    assert money(62384.71, "EUR", 2) == "€62,384.71"
+    assert money(-5, "CHF", signed=True) == "-5 CHF"
 
 
 class PresentationTest(unittest.TestCase):

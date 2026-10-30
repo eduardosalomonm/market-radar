@@ -1,7 +1,7 @@
 import json
 import math
 import sqlite3
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
@@ -477,6 +477,33 @@ class Repository:
             payload["id"] = int(row["id"])
             ideas.append(TradeIdea(**payload))
         return ideas
+
+    def prune_history(self, keep_chart_scans: int = 5, cache_days: int = 10) -> None:
+        """Bound disk use: charts only read recent scans, and raw downloads are only reused within days.
+
+        Scores, ideas and outcomes are kept. Portfolio caches use fixed keys and are never pruned.
+        """
+        cutoff = (datetime.utcnow() - timedelta(days=cache_days)).isoformat()
+        with self._connect() as db:
+            db.execute(
+                """
+                UPDATE signals
+                SET payload_json = json_set(payload_json, '$.price_history', json('[]'),
+                                            '$.relative_history', json('[]'))
+                WHERE scan_id NOT IN (SELECT id FROM scans ORDER BY as_of DESC, id DESC LIMIT ?)
+                  AND (json_array_length(payload_json, '$.price_history') > 0
+                       OR json_array_length(payload_json, '$.relative_history') > 0)
+                """,
+                (keep_chart_scans,),
+            )
+            db.execute(
+                """
+                DELETE FROM raw_cache WHERE fetched_at < ? AND (
+                    cache_key LIKE '%:daily-bars:%' OR cache_key LIKE '%:option-chain:%'
+                    OR cache_key LIKE 'portfolio-options:%')
+                """,
+                (cutoff,),
+            )
 
     def cache_get(self, key: str):
         with self._connect() as db:

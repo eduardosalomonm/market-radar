@@ -4,7 +4,7 @@ from typing import Optional
 from zoneinfo import ZoneInfo
 
 from .outcomes import update_forward_outcomes
-from .pipeline import run_scan
+from .pipeline import STALE_OPTIONS_WARNING, run_scan
 from .portfolio_intelligence import refresh_intelligence
 from .portfolio_tracker import refresh_prices
 
@@ -28,7 +28,13 @@ def scheduler_tick(provider, repository, universe, now: Optional[datetime] = Non
         return None
     scan_universe = universe() if callable(universe) else universe
     result = run_scan(provider, scan_universe, session, scan_type="scheduled")
+    if STALE_OPTIONS_WARNING in result.warnings:
+        # Saving would freeze an empty options day in the one-per-session log.
+        print(f"Skipped scheduled scan for {session.isoformat()}: {STALE_OPTIONS_WARNING}", flush=True)
+        update_forward_outcomes(provider, repository, session)
+        return None
     scan_id = repository.save_scan(result)
+    repository.prune_history()
     saved = repository.get_scan(scan_id)
     update_forward_outcomes(provider, repository, session)
     return saved

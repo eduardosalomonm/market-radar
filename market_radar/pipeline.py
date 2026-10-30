@@ -10,6 +10,7 @@ from .macro import MACRO_ASSETS, analyze_global_macro
 from .models import DailyBar, ScanResult, SymbolSignal, UniverseMember
 
 FORMULA_VERSION = "market-radar-v4"
+STALE_OPTIONS_WARNING = "No option trade from this session: the option snapshot is newer than the scan date"
 
 
 def _percentile(value: float, values: Sequence[float]) -> float:
@@ -184,7 +185,9 @@ def select_option_candidates(
     weakest = sorted((signal for signal in signals if signal.price_axis < 0), key=lambda s: s.price_axis)
     selected = {signal.ticker for signal in strongest[:per_side] + weakest[:per_side]}
     selected.update(sorted(watchlist)[:watchlist_limit])
-    return sorted(selected, key=lambda ticker: (-next(s.price_axis for s in signals if s.ticker == ticker), ticker))
+    # Followed names without enough price history were never scored, so they cannot be ranked here.
+    axis = {signal.ticker: signal.price_axis for signal in signals}
+    return sorted((ticker for ticker in selected if ticker in axis), key=lambda ticker: (-axis[ticker], ticker))
 
 
 def _trend_confirmation(quadrant: str, signal: SymbolSignal, bars: Sequence[DailyBar]) -> float:
@@ -322,6 +325,10 @@ def run_scan(provider, universe: Sequence[UniverseMember], as_of: date, scan_typ
         )
         if idea:
             ideas.append(idea)
+
+    # The option chain is a latest-only snapshot: after the next open, no trade belongs to this session.
+    if pressures and all(pressure.valid_contracts == 0 for pressure in pressures.values()):
+        warnings.append(STALE_OPTIONS_WARNING)
 
     config = {"formula_version": FORMULA_VERSION, "candidate_count": len(candidates), "scan_type": scan_type}
     config_hash = hashlib.sha256(json.dumps(config, sort_keys=True).encode("utf-8")).hexdigest()[:16]

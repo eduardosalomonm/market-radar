@@ -2,7 +2,8 @@ import io
 import tempfile
 import unittest
 from contextlib import redirect_stdout
-from datetime import date, datetime
+from dataclasses import replace
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from unittest.mock import patch
 from zoneinfo import ZoneInfo
@@ -76,6 +77,49 @@ class CliSchedulerTest(unittest.TestCase):
 
         self.assertIsNotNone(result)
         self.assertEqual(repository.latest_scan().as_of, date(2026, 8, 27))
+
+    def test_scheduler_does_not_freeze_a_scan_whose_option_trades_belong_to_a_later_day(self):
+        class NextDayOptions(DemoProvider):
+            # Latest-only snapshot fetched after the next open: every trade is a day newer than the session.
+            def get_option_chain(self, symbol, as_of):
+                return [replace(c, trade_timestamp=c.trade_timestamp + timedelta(days=1))
+                        for c in super().get_option_chain(symbol, as_of)]
+
+        repository = Repository(self.database)
+        universe = load_universe(self.universe_path, [])
+        next_morning = datetime(2026, 8, 28, 10, 30, tzinfo=ZoneInfo("America/New_York"))
+
+        with redirect_stdout(io.StringIO()) as output:
+            result = scheduler_tick(NextDayOptions(), repository, universe, next_morning)
+
+        self.assertIsNone(result)
+        self.assertEqual(repository.list_scans(), [])
+        self.assertIn("Skipped scheduled scan for 2026-08-27", output.getvalue())
+
+    def test_scheduled_scans_keep_charts_only_for_recent_sessions(self):
+        repository = Repository(self.database)
+        universe = load_universe(self.universe_path, [])
+        for day in range(24, 29):
+            scheduler_tick(DemoProvider(), repository, universe, datetime(2026, 8, day, 17, 30, tzinfo=ZoneInfo("America/New_York")))
+        scans = repository.list_scans()
+        before = repository.get_scan(scans[-1]["id"])
+        for key in ("demo:daily-bars:old", "demo:option-chain:old", "portfolio-options:old", "portfolio_closes"):
+            repository.cache_put(key, {"kept": False})
+        with repository._connect() as db:
+            db.execute("UPDATE raw_cache SET fetched_at = '2026-01-01T00:00:00'")
+
+        repository.prune_history(keep_chart_scans=2)
+
+        newest, oldest = repository.get_scan(scans[0]["id"]), repository.get_scan(scans[-1]["id"])
+        self.assertEqual(len(repository.list_scans()), 5)
+        self.assertTrue(newest.signals[0].price_history)
+        self.assertEqual(oldest.signals[0].price_history, [])
+        self.assertEqual(oldest.signals[0].relative_history, [])
+        self.assertEqual([s.evidence_score for s in oldest.signals], [s.evidence_score for s in before.signals])
+        self.assertEqual(oldest.ideas, before.ideas)
+        for key in ("demo:daily-bars:old", "demo:option-chain:old", "portfolio-options:old"):
+            self.assertIsNone(repository.cache_get(key))
+        self.assertEqual(repository.cache_get("portfolio_closes"), {"kept": False})
 
     def test_scheduler_resolves_a_fresh_followed_universe_at_scan_time(self):
         repository = Repository(self.database)

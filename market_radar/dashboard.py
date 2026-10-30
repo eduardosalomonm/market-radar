@@ -9,25 +9,26 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-from market_radar.ai import generate_daily_brief
+from market_radar.ai import deterministic_brief, generate_daily_brief
 from market_radar.catalog import CompanyCatalogEntry, load_company_catalog, search_company_catalog
 from market_radar.catalysts import load_catalysts
 from market_radar.cli import DEFAULT_DATABASE, DEFAULT_UNIVERSE, PROJECT_ROOT, _load_env
 from market_radar.client_report import build_client_brief_pdf
 from market_radar.daily_intelligence import build_daily_intelligence
 from market_radar.exports import export_outcomes_json
-from market_radar.models import PortfolioPosition, UniverseMember
+from market_radar.models import UniverseMember
 from market_radar.pipeline import run_scan
-from market_radar.portfolio_showcase import showcase_sessions
 from market_radar.portfolio_view import SessionPortfolio, example_brief, render_portfolio
 from market_radar.presentation import (
     QUADRANT_EXPLANATIONS,
     evidence_components,
     evidence_label,
     executive_brief,
+    money,
     recommendation_reason,
 )
 from market_radar.providers import AlpacaProvider, CachedProvider, DemoProvider
+from market_radar.public_demo import ensure_public_demo
 from market_radar.repository import Repository
 from market_radar.stock_profile import build_stock_profile
 from market_radar.universe import load_universe
@@ -180,51 +181,7 @@ def company_catalog():
 
 @st.cache_resource
 def bootstrap_public_demo():
-    """Create one safe, deterministic snapshot for ephemeral public hosting."""
-    catalog_by_ticker = {entry.ticker: entry for entry in company_catalog()}
-    for ticker in ("PLTR", "NU"):
-        entry = catalog_by_ticker.get(ticker)
-        if entry:
-            repo.upsert_watchlist(
-                UniverseMember(
-                    entry.ticker,
-                    entry.name,
-                    entry.sector,
-                    entry.sector_etf,
-                    True,
-                    entry.industry,
-                )
-            )
-
-    if not repo.list_positions():
-        demo_positions = {
-            "PLTR": (18.0, 72.0, "AI platform adoption and durable government demand"),
-            "NU": (60.0, 12.5, "Latin American digital banking growth"),
-        }
-        for ticker, (shares, average_cost, thesis) in demo_positions.items():
-            entry = catalog_by_ticker.get(ticker)
-            if entry:
-                repo.upsert_position(
-                    PortfolioPosition(
-                        ticker=entry.ticker,
-                        name=entry.name,
-                        sector=entry.sector,
-                        sector_etf=entry.sector_etf,
-                        industry=entry.industry,
-                        shares=shares,
-                        average_cost=average_cost,
-                        thesis=thesis,
-                    )
-                )
-
-    # Pinned to the example portfolio's date: the brief, portfolio and catalyst calendar describe the same session.
-    provider = DemoProvider()
-    previous_session, session = showcase_sessions()
-    for row in repo.list_scans():
-        if row["provider"] == "demo" and row["as_of"] == session.isoformat() and repo.previous_scan(row["id"]):
-            return row["id"]
-    repo.save_scan(run_scan(provider, universe(), previous_session, scan_type="public-demo"))
-    return repo.save_scan(run_scan(provider, universe(), session, scan_type="public-demo"))
+    return ensure_public_demo(repo, company_catalog(), universe)
 
 
 def save_scan(provider, label):
@@ -232,6 +189,7 @@ def save_scan(provider, label):
     with st.spinner(f"Running {label.lower()} scan for {session.isoformat()}…"):
         result = run_scan(provider, universe(), session, scan_type="manual")
         scan_id = repo.save_scan(result)
+        repo.prune_history()
     st.session_state["selected_scan_id"] = scan_id
     st.success(f"Saved scan {scan_id}: {len(result.signals)} symbols and {len(result.ideas)} conditional ideas.")
     st.rerun()
@@ -329,13 +287,6 @@ def compact_dollars(value: float) -> str:
     if value >= 1_000_000:
         return f"${value / 1_000_000:.1f}M"
     return f"${value:,.0f}"
-
-
-def money(value: float, currency: str, decimals: int = 0, signed: bool = False) -> str:
-    symbols = {"EUR": "€", "USD": "$", "GBP": "£"}
-    symbol = symbols.get(currency.upper())
-    rendered = f"{value:+,.{decimals}f}" if signed else f"{value:,.{decimals}f}"
-    return f"{symbol}{rendered}" if symbol else f"{rendered} {currency.upper()}"
 
 
 st.markdown('<div class="radar-nav-spacer" aria-hidden="true"></div>', unsafe_allow_html=True)
@@ -900,12 +851,13 @@ if view == "1 · Executive Brief":
 
     if professional_detail:
         with st.expander("Optional narrative engine and detailed daily brief"):
-            daily = generate_daily_brief(scan)
+            # Never call the paid API on a rerun; only an explicit click, and never for anonymous visitors.
+            daily = deterministic_brief(scan)
             st.markdown(f"**{daily['headline']}**")
             st.write(daily["summary"])
             for leader in daily["leaders"]:
                 st.write(f"• {leader}")
-            if os.getenv("OPENAI_API_KEY") and st.button("Generate optional AI narrative"):
+            if not PUBLIC_DEMO and os.getenv("OPENAI_API_KEY") and st.button("Generate optional AI narrative"):
                 st.session_state[f"ai_brief_{scan.id}"] = generate_daily_brief(
                     scan,
                     api_key=os.getenv("OPENAI_API_KEY"),

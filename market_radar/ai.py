@@ -17,7 +17,7 @@ BRIEF_SCHEMA = {
 }
 
 
-def _deterministic_brief(scan: ScanResult):
+def deterministic_brief(scan: ScanResult):
     ranked = sorted(
         (signal for signal in scan.signals if signal.evidence_score is not None),
         key=lambda signal: signal.evidence_score,
@@ -75,7 +75,7 @@ def generate_daily_brief(
     model: Optional[str] = None,
     client=None,
 ):
-    fallback = _deterministic_brief(scan)
+    fallback = deterministic_brief(scan)
     if client is None:
         key = api_key or os.getenv("OPENAI_API_KEY")
         if not key:

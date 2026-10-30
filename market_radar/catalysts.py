@@ -17,10 +17,6 @@ class Catalyst:
     source: str
     source_url: str
 
-    @property
-    def days_away_label(self) -> str:
-        return self.date.strftime("%b %-d")
-
 
 def load_catalysts(
     path,

@@ -127,6 +127,13 @@ class PipelineTest(unittest.TestCase):
 
         self.assertEqual(set(selected), {"AAA", "BBB", "CCC"})
 
+    def test_candidate_selection_skips_followed_names_without_price_history(self):
+        signals = analyze_price_universe(self.bars, self.universe, self.as_of)
+
+        selected = select_option_candidates(signals, {"CCC", "NEWIPO"}, per_side=1, watchlist_limit=2)
+
+        self.assertEqual(set(selected), {"AAA", "BBB", "CCC"})
+
     def test_scan_returns_partial_result_when_one_option_chain_fails(self):
         provider = FakeProvider(self.bars, failed_symbol="BBB")
 

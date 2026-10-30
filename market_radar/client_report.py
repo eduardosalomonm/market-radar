@@ -29,10 +29,6 @@ def _money(value) -> str:
     return f"${value:,.2f}" if value is not None else "-"
 
 
-def _format_change(value) -> str:
-    return f"{value:+.1%}" if value is not None else "New"
-
-
 def build_client_brief_pdf(scan: ScanResult, intelligence: dict[str, object], catalysts) -> bytes:
     output = BytesIO()
     document = SimpleDocTemplate(

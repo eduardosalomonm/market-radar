@@ -2,6 +2,17 @@ from typing import Optional
 
 from .models import ScanResult, SymbolSignal, TradeIdea
 
+CURRENCY_SYMBOLS = {"EUR": "€", "USD": "$", "GBP": "£"}
+
+
+def money(value: float, currency: str, decimals: int = 0, signed: bool = False) -> str:
+    """The sign leads the currency symbol: +€342.03, -€44."""
+    symbol = CURRENCY_SYMBOLS.get(currency.upper())
+    sign = ("+" if value >= 0 else "-") if signed else ("-" if value < 0 else "")
+    rendered = f"{abs(value):,.{decimals}f}"
+    return f"{sign}{symbol}{rendered}" if symbol else f"{sign}{rendered} {currency.upper()}"
+
+
 QUADRANT_EXPLANATIONS = {
     "Contrarian Bid": "Price has lagged, but options activity leans bullish. Watch for a confirmed reversal.",
     "Fear": "Price weakness and bearish options activity agree. Watch for downside continuation.",
